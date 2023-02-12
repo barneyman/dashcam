@@ -28,7 +28,8 @@ RUN apt install -y gstreamer1.0-omx-generic
 RUN apt install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libgstrtspserver-1.0-dev
 # dev rtsp-server
 RUN apt install -y libgstrtspserver-1.0-dev
-
+# sql dev
+RUN apt install -y libmariadb-dev
 
 
 

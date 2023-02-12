@@ -2,6 +2,9 @@
 #include "gstreamHelpers/helperBins/myElementBins.h"
 #include "gstreamHelpers/helperBins/myMuxBins.h"
 
+// sql
+#include <mysql.h>
+
 
 class ringBufferPipeline : public gstreamPipeline
 {
