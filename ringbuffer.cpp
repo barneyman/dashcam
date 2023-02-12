@@ -92,63 +92,6 @@ int main()
 
     ringBufferPipeline thePipeline(location,destination);
 
-    
-#ifdef _DEAD    
-
-    gstreamPipeline thePipeline("mainPipeline");
-
-#define _USE_MY_BINS
-#ifdef _USE_MY_BINS
-
-    rtspSourceBin sourceBin(&thePipeline,location,"source");
-    
-    gstCapsFilterSimple h264Caps(&thePipeline,"video/x-h264,stream-format=(string)avc,alignment=(string)au");
-
-    gstSplitMuxOutBin sinkBin(&thePipeline,10);
-
-    thePipeline.ConnectPipeline("source","splitMuxOutBin","capsFilterBin");
-
-#else
-
-    thePipeline.AddPlugin("rtspsrc","rtspsrc");
-    thePipeline.AddPlugin("rtph264depay","depay2");
-    thePipeline.AddPlugin("rtpjitterbuffer","antijitter");
-    thePipeline.AddPlugin("h264parse","parser2");
-
-    // and config
-    g_object_set (thePipeline.FindNamedPlugin("rtspsrc"), 
-        "location",location,
-        NULL);
-
-    // rtsp connects late
-    thePipeline.ConnectPipelineLate(    thePipeline.FindNamedPlugin("rtspsrc"),
-                    thePipeline.FindNamedPlugin("antijitter"));
-
-    // then all the others ..
-    gst_element_link_many(
-            thePipeline.FindNamedPlugin("antijitter"),
-            thePipeline.FindNamedPlugin("depay2"),
-            thePipeline.FindNamedPlugin("parser2"),
-            NULL
-        );
-
-    thePipeline.AddPlugin("mp4mux","muxer");
-
-    thePipeline.AddPlugin("filesink","finalsink");
-    g_object_set (thePipeline.FindNamedPlugin("finalsink"), 
-        "location", destination, NULL);
-
-    gst_element_link_many( thePipeline.FindNamedPlugin("parser2"),
-        thePipeline.FindNamedPlugin("muxer"),
-        thePipeline.FindNamedPlugin("finalsink"),
-        NULL
-        );
-
-#endif
-
-
-#endif // dead
-
     thePipeline.DumpGraph("prerun");
 
     thePipeline.Run(60);
