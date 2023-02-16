@@ -1,6 +1,7 @@
 #include "gstreamHelpers/helperBins/remoteSourceBins.h"
 #include "gstreamHelpers/helperBins/myElementBins.h"
 #include "gstreamHelpers/helperBins/myMuxBins.h"
+#include "gstreamHelpers/helperBins/myDemuxBins.h"
 
 // sql
 #include <mysql.h>
@@ -14,19 +15,23 @@ public:
         gstreamPipeline("ringBufferPipeline"),
         m_sourceBin(this,src,"source"),
         m_h264Caps(this,"video/x-h264,stream-format=(string)avc,alignment=(string)au"),
-        m_sinkBin(this,10,out)
+        m_sinkBin(this,60,out),
+        m_progress(this)
     {
-        
-        ConnectPipeline("source","splitMuxOutBin","capsFilterBin");
+        //ConnectPipeline(m_sourceBin,m_sinkBin,m_h264Caps);
+        gst_element_link_many(FindNamedPlugin(m_sourceBin),
+            FindNamedPlugin(m_h264Caps),
+            FindNamedPlugin(m_progress),
+            FindNamedPlugin(m_sinkBin),
+            NULL);
+    }
+
+    virtual void SplitMuxOpenedSplit(GstClockTime, const char*newFile)
+    {
 
     }
 
-    void SplitMuxOpenedSplit(GstClockTime, const char*newFile)
-    {
-
-    }
-
-    void SplitMuxClosedSplit(GstClockTime, const char*newFile)
+    virtual void SplitMuxClosedSplit(GstClockTime, const char*newFile)
     {
         
     }
@@ -81,8 +86,34 @@ protected:
     rtspSourceBin m_sourceBin;
     gstCapsFilterSimple m_h264Caps;
     gstSplitMuxOutBin m_sinkBin;
+    gstFrameBufferProgress m_progress;
 
 };
+
+
+class joinVidsPipeline : public gstreamPipeline
+{
+public:
+    joinVidsPipeline(std::vector<std::string> &files, const char*destination):
+        gstreamPipeline("joinVidsPipeline"),
+        m_multisrc(this,files),
+        m_out(this,destination)
+
+    {
+        ConnectPipeline(m_multisrc,m_out);
+    }
+
+protected:
+
+        gstMP4DemuxDecodeSparseBin m_multisrc;
+        gstMP4OutBin m_out;
+
+};
+
+
+
+
+#define SPLIT_SINK
 
 
 int main()
@@ -90,13 +121,38 @@ int main()
     const char *location="rtsp://vpnhack:8554/cam";
     const char *destination="/workspaces/dashcam/out_%05d.mp4";
 
-    ringBufferPipeline thePipeline(location,destination);
+    gstreamPipeline thePipeline("mainPipeline");
 
-    thePipeline.DumpGraph("prerun");
 
-    thePipeline.Run(60);
+#ifdef SPLIT_SINK
 
-    thePipeline.DumpGraph("postrun");
+    ringBufferPipeline ringPipeline(location,destination);
+    ringPipeline.Run(360);
+
+
+#else
+
+
+    std::vector<std::string> files;
+    
+    files.push_back("/workspaces/dashcam/out_00000.mp4");
+    files.push_back("/workspaces/dashcam/out_00001.mp4");
+    files.push_back("/workspaces/dashcam/out_00002.mp4");
+    files.push_back("/workspaces/dashcam/out_00003.mp4");
+    files.push_back("/workspaces/dashcam/out_00004.mp4");
+    files.push_back("/workspaces/dashcam/out_00005.mp4");
+
+    // gstMP4DemuxDecodeSparseBin multiSrc(&thePipeline,files);
+    // gstMP4OutBin out(&thePipeline,"/workspaces/dashcam/combined.mp4");
+    // thePipeline.ConnectPipeline(multiSrc,out);
+
+    // thePipeline.Run();
+
+    joinVidsPipeline joiner(files,"/workspaces/dashcam/combined.mp4");
+    joiner.Run();
+
+
+#endif
 
     return 1;
 
