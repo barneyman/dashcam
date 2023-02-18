@@ -33,15 +33,25 @@ static GOptionEntry entries[] = {
 
 #include <thread>
 
+#include "mdns_cpp/mdns.hpp"
 
-
-//extern "C" {
-  extern "C" int service_mdns(const char* hostname, const char* service_name, int service_port);
-//}
 
 void mdns_advertise()
 {
-  service_mdns("vpnhack","_dashcam._tcp.local",8888);
+  mdns_cpp::mDNS mdns;
+
+  char hostname[128];
+  gethostname(hostname, sizeof(hostname)-1);
+
+  mdns.setServiceHostname(hostname);
+  mdns.setServicePort(8888);
+  mdns.setServiceName("_dashcam._tcp.local.");
+
+  mdns.startService();
+
+  while (true) {
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
 }
 
 

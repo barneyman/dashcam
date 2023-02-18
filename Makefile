@@ -24,9 +24,13 @@ $(MYPLUGINSLIB):
 rtsp-server-simple: rtsp-server-simple.cpp
 	g++ -g -o $@ $(GST_RTSP_SRV_CONFIG) rtsp-server-simple.cpp
 
+MDNS_CPP_DIR = ./mdns_cpp
+MDNS_CPP_INC = $(MDNS_CPP_DIR)/include
+MDNS_CPP_AR = $(MDNS_CPP_DIR)/build/lib/libmdns_cpp.a
 
-ringbuffer: ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(wildcard $(HELPERBINS)/*.h)
-	g++ -g -o $@ ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(GST_CONFIG) $(MYSQLCONFIG)
+
+ringbuffer: ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(MDNS_CPP_AR) $(wildcard $(HELPERBINS)/*.h)
+	g++ -g -o $@ ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(MDNS_CPP_AR) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC)
 
 # preceeding - means 'let it fail'
 clean:
