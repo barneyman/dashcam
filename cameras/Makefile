@@ -24,15 +24,16 @@ RTSPOBJ = $(RTSPSRC:.cc=.o)
 RTSPSERVER = rtsp-srv
 RTSPSERVERCXXFLAGS = $(CXXFLAGS) $(GSTRTSPCONFIG)
 
+MDNS_CPP_DIR = ../mdns_cpp
+MDNS_CPP_INC = $(MDNS_CPP_DIR)/include
+MDNS_CPP_AR = $(MDNS_CPP_DIR)/build/lib/libmdns_cpp.a
 
 
 rtsp: $(RTSPSERVER)
 
-
 # apps
 $(RTSPSERVER): $(RTSPOBJ) 
-	$(CCC) -c mdns_advertise.c
-	$(CXX) $(LDFLAGS) -o $@ $(RTSPOBJ) mdns_advertise.o $(CPPFLAGS) $(RTSPSERVERCXXFLAGS) -I $(GSTHELPERESINCLUDE)
+	$(CXX) $(LDFLAGS) -o $@ $(RTSPOBJ) $(MDNS_CPP_AR) $(CPPFLAGS) $(RTSPSERVERCXXFLAGS) -I $(GSTHELPERESINCLUDE) -I $(MDNS_CPP_INC)
 
 
 
