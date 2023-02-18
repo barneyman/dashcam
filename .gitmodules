@@ -1,3 +1,6 @@
 [submodule "gstreamHelpers"]
 	path = gstreamHelpers
 	url = git@github.com:barneyman/gstreamHelpers.git
+[submodule "cameras/mdns"]
+	path = cameras/mdns
+	url = git@github.com:mjansson/mdns.git
