@@ -55,6 +55,7 @@ public:
     ~ringBufferPipeline()
     {
         delete m_sourceBins;
+        m_browser.join();
     }
 
     static void staticBrowse(ringBufferPipeline *owner)
