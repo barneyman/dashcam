@@ -5,6 +5,16 @@
 
 // sql
 #include <mysql.h>
+// mdns
+
+#include <thread>
+#include <chrono>
+
+#include "mdns_cpp/mdns.hpp"
+#include "mdns_cpp/macros.hpp"
+#include "mdns_cpp/utils.hpp"
+
+
 
 
 class ringBufferPipeline : public gstreamPipeline
@@ -13,17 +23,58 @@ class ringBufferPipeline : public gstreamPipeline
 public:
     ringBufferPipeline(const char*src, const char *out):
         gstreamPipeline("ringBufferPipeline"),
-        m_sourceBin(this,src,"source"),
-        m_h264Caps(this,"video/x-h264,stream-format=(string)avc,alignment=(string)au"),
+        m_sourceBins(NULL),
         m_sinkBin(this,60,out),
-        m_progress(this)
+        m_browserDone(false),
+        m_browser(staticBrowse,this)
+
     {
-        //ConnectPipeline(m_sourceBin,m_sinkBin,m_h264Caps);
-        gst_element_link_many(FindNamedPlugin(m_sourceBin),
-            FindNamedPlugin(m_h264Caps),
-            FindNamedPlugin(m_progress),
-            FindNamedPlugin(m_sinkBin),
-            NULL);
+        while(!m_browserDone)
+        {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+
+        // mark up the records
+        std::vector<std::string> urls;
+        for(auto each=arecords.begin();each!=arecords.end();each++)
+        {
+            // rtsp://vpnhack:8554/cam
+            std::string url("rtsp://");
+            url+=*each;
+            url+=":8554/cam";
+            urls.push_back(url);
+            // TODO remove this
+            urls.push_back(url);
+        }
+
+        m_sourceBins=new multiRemoteSourceBin<rtspSourceBin>(this,urls,"video/x-h264,stream-format=(string)avc,alignment=(string)au");
+
+        buildPipeline();
+    }
+
+    ~ringBufferPipeline()
+    {
+        delete m_sourceBins;
+    }
+
+    static void staticBrowse(ringBufferPipeline *owner)
+    {
+        owner->Browse();
+    }
+
+    void Browse()
+    {
+        mdns_cpp::mDNS mdns;
+        mdns.executeQuery("_dashcam._tcp.local.",arecords);
+        m_browserDone=true;
+    }    
+
+    bool buildPipeline()
+    {
+
+        ConnectPipeline(*m_sourceBins,m_sinkBin);
+
+        return true;
     }
 
     virtual void SplitMuxOpenedSplit(GstClockTime, const char*newFile)
@@ -83,11 +134,12 @@ public:
 
 protected:
 
-    rtspSourceBin m_sourceBin;
-    gstCapsFilterSimple m_h264Caps;
-    gstSplitMuxOutBin m_sinkBin;
-    gstFrameBufferProgress m_progress;
+    bool m_browserDone;
+    std::vector<std::string> arecords;
 
+    multiRemoteSourceBin<rtspSourceBin> *m_sourceBins;
+    gstSplitMuxOutBin m_sinkBin;
+    std::thread m_browser;
 };
 
 
@@ -127,7 +179,7 @@ int main()
 #ifdef SPLIT_SINK
 
     ringBufferPipeline ringPipeline(location,destination);
-    ringPipeline.Run(360);
+    ringPipeline.Run(60);
 
 
 #else
