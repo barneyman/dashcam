@@ -14,12 +14,16 @@ GSTHELPERESINCLUDE = gstreamHelpers
 GSTHELPERLIB = $(GSTHELPERESINCLUDE)/libgstreamHelpers.a
 MYPLUGINSLIB = $(GSTHELPERESINCLUDE)/libmyplugins.a
 HELPERBINS = $(GSTHELPERESINCLUDE)/helperBins
+NMEALIB = $(GSTHELPERESINCLUDE)/libnematode.a
 
 $(GSTHELPERLIB): $(wildcard $(GSTHELPERESINCLUDE)/*.cpp) $(wildcard $(GSTHELPERESINCLUDE)/*.h)
 	make -C $(GSTHELPERESINCLUDE) helperlib
 
 $(MYPLUGINSLIB):
 	make -C $(GSTHELPERESINCLUDE) myplugins 
+
+$(NMEALIB):
+	make -C $(GSTHELPERESINCLUDE) nmealib 
 
 rtsp-server-simple: rtsp-server-simple.cpp
 	g++ -g -o $@ $(GST_RTSP_SRV_CONFIG) rtsp-server-simple.cpp
@@ -29,8 +33,8 @@ MDNS_CPP_INC = $(MDNS_CPP_DIR)/include
 MDNS_CPP_AR = $(MDNS_CPP_DIR)/build/lib/libmdns_cpp.a
 
 
-ringbuffer: ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(MDNS_CPP_AR) $(wildcard $(HELPERBINS)/*.h)
-	g++ -g -o $@ ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(MDNS_CPP_AR) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC)
+ringbuffer: ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_AR) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h)
+	g++ -g -o $@ ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_AR) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
 
 # preceeding - means 'let it fail'
 clean:
