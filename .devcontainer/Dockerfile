@@ -30,6 +30,11 @@ RUN apt update && apt upgrade -y
 
 ################
 
+# to get pango (text-overlay) built
+RUN apt install -y libpango1.0-dev
+# ?
+RUN apt install -y libavfilter-dev
+
 WORKDIR /gstreamer
 
 ENV DEBIAN_FRONTEND="noninteractive"
@@ -74,6 +79,7 @@ RUN cd ./gst-build && \
 
 RUN cd ./gst-build/gst-build-$GST_VERSION && \
     meson build 
+        #-Dgst-plugins-base:pango=enabled    
         # -Dintrospection=enabled \
         # -Dexamples=disabled \
         # -Dgtk_doc=disabled \
