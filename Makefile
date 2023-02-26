@@ -50,3 +50,14 @@ joiner: joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(
 clean:
 	-rm ./dots/*
 	-rm ./out.mp4
+
+package_all: package_server
+
+package_server:
+	- mkdir .debpkg_server/usr/
+	- mkdir .debpkg_server/usr/bin
+	cp ringbuffer .debpkg_server/usr/bin/
+	cp joiner .debpkg_server/usr/bin/
+	fakeroot dpkg-deb --build .debpkg_server
+	mv .debpkg_server.deb dashcam_server.deb
+
