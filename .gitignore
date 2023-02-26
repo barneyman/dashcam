@@ -6,3 +6,4 @@ runserver.sh
 **/*.log
 **/*.a
 rtsp-srv
+joiner
