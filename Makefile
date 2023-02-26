@@ -54,10 +54,10 @@ clean:
 package_all: package_server
 
 package_server:
-	- mkdir .debpkg_server/usr/
-	- mkdir .debpkg_server/usr/bin
-	cp ringbuffer .debpkg_server/usr/bin/
-	cp joiner .debpkg_server/usr/bin/
-	fakeroot dpkg-deb --build .debpkg_server
-	mv .debpkg_server.deb dashcam_server.deb
+	- mkdir .debpkg-server/usr/
+	- mkdir .debpkg-server/usr/bin
+	cp ringbuffer .debpkg-server/usr/bin/
+	cp joiner .debpkg-server/usr/bin/
+	fakeroot dpkg-deb --build .debpkg-server
+	mv .debpkg-server.deb dashcam-server.deb
 
