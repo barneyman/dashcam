@@ -1,16 +1,17 @@
 #include "gstreamHelpers/helperBins/remoteSourceBins.h"
 #include "gstreamHelpers/helperBins/myElementBins.h"
 #include "gstreamHelpers/helperBins/myMuxBins.h"
-#include "gstreamHelpers/helperBins/myDemuxBins.h"
+//#include "gstreamHelpers/helperBins/myDemuxBins.h"
+#include "gstreamHelpers/myplugins/gstnmeasource.h"
 #include "metaBins.h"
 
 // sql
 #include <mysql.h>
-// mdns
 
 #include <thread>
 #include <chrono>
 
+// mdns
 #include "mdns_cpp/mdns.hpp"
 #include "mdns_cpp/macros.hpp"
 #include "mdns_cpp/utils.hpp"
@@ -166,81 +167,17 @@ protected:
     gstNmeaToSubs m_nmea;
 };
 
-#define _USE_META
-class joinVidsPipeline : public gstreamPipeline
-{
-public:
-    joinVidsPipeline(std::vector<std::string> &files, const char*destination):
-        gstreamPipeline("joinVidsPipeline"),
-        m_multisrc(this,files),
-#ifdef _USE_META        
-        m_meta(this),
-#endif        
-        m_out(this,destination)
-
-    {
-#ifdef _USE_META        
-        ConnectPipeline(m_multisrc,m_out,m_meta);
-#else        
-        ConnectPipeline(m_multisrc,m_out);
-#endif        
-    }
-
-protected:
-
-        gstMP4DemuxDecodeSparseBin m_multisrc;
-        gstMP4OutBin m_out;
-#ifdef _USE_META        
-        gstMultiNmeaJsonToPangoRenderBin m_meta;
-#endif
-};
 
 
 
-
-#define SPLIT_SINK
-
-#include "gstreamHelpers/myplugins/gstnmeasource.h"
 
 int main()
 {
     const char *location="rtsp://vpnhack:8554/cam";
     const char *destination="/workspaces/dashcam/out_%05d.mp4";
 
-    if(0)
-    {
-        gstreamPipeline thePipeline("mainPipeline");
-        ringBufferPipeline ringPipeline(location,destination);
-        ringPipeline.Run(30);
-        return 1;
-    }
-
-    std::vector<std::string> files={
-        "/workspaces/dashcam/out_00000.mp4"
-    };
-    
-    //files.push_back("/workspaces/dashcam/out_00000.mp4");
-    // files.push_back("/workspaces/dashcam/out_00001.mp4");
-    // files.push_back("/workspaces/dashcam/out_00002.mp4");
-    // files.push_back("/workspaces/dashcam/out_00003.mp4");
-    // files.push_back("/workspaces/dashcam/out_00004.mp4");
-    // files.push_back("/workspaces/dashcam/out_00005.mp4");
-
-    // gstMP4DemuxDecodeSparseBin multiSrc(&thePipeline,files);
-    // gstMP4OutBin out(&thePipeline,"/workspaces/dashcam/combined.mp4");
-    // thePipeline.ConnectPipeline(multiSrc,out);
-
-    // thePipeline.Run();
-
-    joinVidsPipeline joiner(files,"/workspaces/dashcam/combined.mp4");
-    joiner.Run();
-
-
-
-    return 1;
-
-
-
-
+    gstreamPipeline thePipeline("mainPipeline");
+    ringBufferPipeline ringPipeline(location,destination);
+    ringPipeline.Run(30);
 
 }

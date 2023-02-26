@@ -8,6 +8,8 @@ GST_RTSP_SRV_CONFIG = `pkg-config --cflags --libs gstreamer-rtsp-server-1.0 gstr
 GST_CONFIG = `pkg-config --cflags --libs gstreamer-1.0 gstreamer-base-1.0 gstreamer-net-1.0`
 MYSQLCONFIG = `pkg-config --cflags --libs mariadb`
 
+all: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB)ringbuffer joiner
+
 
 # internal libs
 GSTHELPERESINCLUDE = gstreamHelpers
@@ -25,16 +27,24 @@ $(MYPLUGINSLIB):
 $(NMEALIB):
 	make -C $(GSTHELPERESINCLUDE) nmealib 
 
-rtsp-server-simple: rtsp-server-simple.cpp
-	g++ -g -o $@ $(GST_RTSP_SRV_CONFIG) rtsp-server-simple.cpp
 
 MDNS_CPP_DIR = ./mdns_cpp
+MDNS_BUILD_DIR = $(MDNS_CPP_DIR)/build
 MDNS_CPP_INC = $(MDNS_CPP_DIR)/include
-MDNS_CPP_AR = $(MDNS_CPP_DIR)/build/lib/libmdns_cpp.a
+MDNS_CPP_LIB = $(MDNS_CPP_DIR)/build/lib/libmdns_cpp.a
+
+$(MDNS_CPP_LIB):
+	- mkdir $(MDNS_BUILD_DIR)
+	cd $(MDNS_BUILD_DIR) && cmake ..
+	make -C $(MDNS_BUILD_DIR)
 
 
-ringbuffer: ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_AR) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h)
-	g++ -g -o $@ ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_AR) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
+ringbuffer: ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h)
+	g++ -g -o $@ ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
+
+joiner: joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h)
+	g++ -g -o $@ ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
+
 
 # preceeding - means 'let it fail'
 clean:
