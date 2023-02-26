@@ -1,6 +1,9 @@
 dots/*
-out.mp4
 ringbuffer
 runserver.sh
 *.mp4
 **/*.o
+**/*.log
+**/*.a
+rtsp-srv
+joiner

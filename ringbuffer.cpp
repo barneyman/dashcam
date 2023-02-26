@@ -1,15 +1,17 @@
 #include "gstreamHelpers/helperBins/remoteSourceBins.h"
 #include "gstreamHelpers/helperBins/myElementBins.h"
 #include "gstreamHelpers/helperBins/myMuxBins.h"
-#include "gstreamHelpers/helperBins/myDemuxBins.h"
+//#include "gstreamHelpers/helperBins/myDemuxBins.h"
+#include "gstreamHelpers/myplugins/gstnmeasource.h"
+#include "metaBins.h"
 
 // sql
 #include <mysql.h>
-// mdns
 
 #include <thread>
 #include <chrono>
 
+// mdns
 #include "mdns_cpp/mdns.hpp"
 #include "mdns_cpp/macros.hpp"
 #include "mdns_cpp/utils.hpp"
@@ -26,13 +28,21 @@ public:
         m_sourceBins(NULL),
         m_sinkBin(this,60,out),
         m_browserDone(false),
+        m_fatal(false),
+        m_nmea(this),
         m_browser(staticBrowse,this)
 
     {
+        // use NTP clock
+        UseNTPv4Clock();
+
         while(!m_browserDone)
         {
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
+
+        // use real time
+        //setRealtimeClock();
 
         // mark up the records
         std::vector<std::string> urls;
@@ -43,13 +53,11 @@ public:
             url+=*each;
             url+=":8554/cam";
             urls.push_back(url);
-            // TODO remove this
-            urls.push_back(url);
         }
 
         m_sourceBins=new multiRemoteSourceBin<rtspSourceBin>(this,urls,"video/x-h264,stream-format=(string)avc,alignment=(string)au");
 
-        buildPipeline();
+        m_fatal=buildPipeline();
     }
 
     ~ringBufferPipeline()
@@ -72,8 +80,23 @@ public:
 
     bool buildPipeline()
     {
+        // //ConnectPipeline(m_nmea,m_sinkBin);
+        GstCaps *subtitlecaps=gst_caps_from_string("text/any");
+        //gst_element_link_filtered(FindNamedPlugin(m_nmea),FindNamedPlugin(m_sinkBin),subtitlecaps);
+        bool success=gst_element_link_pads(FindNamedPlugin(m_nmea),NULL,FindNamedPlugin(m_sinkBin),"subtitle_%u");
 
-        ConnectPipeline(*m_sourceBins,m_sinkBin);
+
+        // //ConnectPipeline(*m_sourceBins,m_sinkBin);
+        GstCaps *videocaps=gst_caps_from_string("video/any");
+//        success=gst_element_link_filtered(FindNamedPlugin(*m_sourceBins),FindNamedPlugin(m_sinkBin),videocaps);
+        success=gst_element_link(FindNamedPlugin(*m_sourceBins),FindNamedPlugin(m_sinkBin));
+
+
+        gst_caps_unref(videocaps);
+        gst_caps_unref(subtitlecaps);
+        
+        // gst_element_link(FindNamedPlugin(*m_sourceBins),FindNamedPlugin(m_sinkBin));
+        // gst_element_link(FindNamedPlugin(m_nmea),FindNamedPlugin(m_sinkBin));
 
         return true;
     }
@@ -135,38 +158,17 @@ public:
 
 protected:
 
-    bool m_browserDone;
+    bool m_browserDone, m_fatal;
     std::vector<std::string> arecords;
-
+    
     multiRemoteSourceBin<rtspSourceBin> *m_sourceBins;
     gstSplitMuxOutBin m_sinkBin;
     std::thread m_browser;
-};
-
-
-class joinVidsPipeline : public gstreamPipeline
-{
-public:
-    joinVidsPipeline(std::vector<std::string> &files, const char*destination):
-        gstreamPipeline("joinVidsPipeline"),
-        m_multisrc(this,files),
-        m_out(this,destination)
-
-    {
-        ConnectPipeline(m_multisrc,m_out);
-    }
-
-protected:
-
-        gstMP4DemuxDecodeSparseBin m_multisrc;
-        gstMP4OutBin m_out;
-
+    gstNmeaToSubs m_nmea;
 };
 
 
 
-
-#define SPLIT_SINK
 
 
 int main()
@@ -175,42 +177,7 @@ int main()
     const char *destination="/workspaces/dashcam/out_%05d.mp4";
 
     gstreamPipeline thePipeline("mainPipeline");
-
-
-#ifdef SPLIT_SINK
-
     ringBufferPipeline ringPipeline(location,destination);
-    ringPipeline.Run(60);
-
-
-#else
-
-
-    std::vector<std::string> files;
-    
-    files.push_back("/workspaces/dashcam/out_00000.mp4");
-    files.push_back("/workspaces/dashcam/out_00001.mp4");
-    files.push_back("/workspaces/dashcam/out_00002.mp4");
-    files.push_back("/workspaces/dashcam/out_00003.mp4");
-    files.push_back("/workspaces/dashcam/out_00004.mp4");
-    files.push_back("/workspaces/dashcam/out_00005.mp4");
-
-    // gstMP4DemuxDecodeSparseBin multiSrc(&thePipeline,files);
-    // gstMP4OutBin out(&thePipeline,"/workspaces/dashcam/combined.mp4");
-    // thePipeline.ConnectPipeline(multiSrc,out);
-
-    // thePipeline.Run();
-
-    joinVidsPipeline joiner(files,"/workspaces/dashcam/combined.mp4");
-    joiner.Run();
-
-
-#endif
-
-    return 1;
-
-
-
-
+    ringPipeline.Run(30);
 
 }
