@@ -28,14 +28,14 @@ $(NMEALIB):
 	make -C $(GSTHELPERESINCLUDE) nmealib 
 
 
-MDNS_CPP_DIR = ./mdns_cpp
+MDNS_CPP_DIR = mdns_cpp
 MDNS_BUILD_DIR = $(MDNS_CPP_DIR)/build
 MDNS_CPP_INC = $(MDNS_CPP_DIR)/include
 MDNS_CPP_LIB = $(MDNS_CPP_DIR)/build/lib/libmdns_cpp.a
 
 $(MDNS_CPP_LIB):
 	- mkdir $(MDNS_BUILD_DIR)
-	cd $(MDNS_BUILD_DIR) && cmake && cd .. && cd ..
+	cd $(MDNS_BUILD_DIR) && cmake .. && cd .. && cd ..
 	make -C $(MDNS_BUILD_DIR)
 
 
