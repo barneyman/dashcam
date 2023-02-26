@@ -3,4 +3,4 @@
 	url = git@github.com:barneyman/gstreamHelpers.git
 [submodule "mdns_cpp"]
 	path = mdns_cpp
-	url = https://github.com/gocarlos/mdns_cpp
+	url = git@github.com:barneyman/mdns_cpp
