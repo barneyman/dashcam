@@ -35,7 +35,7 @@ MDNS_CPP_LIB = $(MDNS_CPP_DIR)/build/lib/libmdns_cpp.a
 
 $(MDNS_CPP_LIB):
 	- mkdir $(MDNS_BUILD_DIR)
-	pushd && cd $(MDNS_BUILD_DIR) && cmake && popd
+	cd $(MDNS_BUILD_DIR) && cmake && cd .. && cd ..
 	make -C $(MDNS_BUILD_DIR)
 
 
