@@ -32,13 +32,16 @@ public:
         m_browser(staticBrowse,this)
 
     {
+        // use NTP clock
+        UseNTPv4Clock();
+
         while(!m_browserDone)
         {
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
 
         // use real time
-        setRealtimeClock();
+        //setRealtimeClock();
 
         // mark up the records
         std::vector<std::string> urls;
@@ -195,7 +198,7 @@ protected:
 
 
 
-//#define SPLIT_SINK
+#define SPLIT_SINK
 
 #include "gstreamHelpers/myplugins/gstnmeasource.h"
 
@@ -204,20 +207,19 @@ int main()
     const char *location="rtsp://vpnhack:8554/cam";
     const char *destination="/workspaces/dashcam/out_%05d.mp4";
 
-    gstreamPipeline thePipeline("mainPipeline");
+    if(0)
+    {
+        gstreamPipeline thePipeline("mainPipeline");
+        ringBufferPipeline ringPipeline(location,destination);
+        ringPipeline.Run(30);
+        return 1;
+    }
 
-
-#ifdef SPLIT_SINK
-
-    ringBufferPipeline ringPipeline(location,destination);
-    ringPipeline.Run(30);
-
-#else
-
-
-    std::vector<std::string> files;
+    std::vector<std::string> files={
+        "/workspaces/dashcam/out_00000.mp4"
+    };
     
-    files.push_back("/workspaces/dashcam/out_00000.mp4");
+    //files.push_back("/workspaces/dashcam/out_00000.mp4");
     // files.push_back("/workspaces/dashcam/out_00001.mp4");
     // files.push_back("/workspaces/dashcam/out_00002.mp4");
     // files.push_back("/workspaces/dashcam/out_00003.mp4");
@@ -234,7 +236,6 @@ int main()
     joiner.Run();
 
 
-#endif
 
     return 1;
 
