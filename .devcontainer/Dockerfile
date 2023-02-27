@@ -27,7 +27,7 @@ RUN apt update && apt upgrade -y
 # dev rtsp-server
 #RUN apt install -y libgstrtspserver-1.0-dev
 
-
+VOLUME /vids
 ################
 
 # to get pango (text-overlay) built
