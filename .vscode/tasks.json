@@ -6,7 +6,7 @@
         {
             "label": "make",
             "type": "shell",
-            "command": "make ringbuffer clean",
+            "command": "make ringbuffer joiner clean",
             "problemMatcher": [],
             "group": {
                 "kind": "build",

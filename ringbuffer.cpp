@@ -1,7 +1,6 @@
 #include "gstreamHelpers/helperBins/remoteSourceBins.h"
 #include "gstreamHelpers/helperBins/myElementBins.h"
 #include "gstreamHelpers/helperBins/myMuxBins.h"
-//#include "gstreamHelpers/helperBins/myDemuxBins.h"
 #include "gstreamHelpers/myplugins/gstnmeasource.h"
 #include "metaBins.h"
 
@@ -17,24 +16,26 @@
 #include "mdns_cpp/utils.hpp"
 
 
-
+#define _USE_NMEA
 
 class ringBufferPipeline : public gstreamPipeline
 {
 
 public:
-    ringBufferPipeline(const char*src, const char *out):
+    ringBufferPipeline(const char *out):
         gstreamPipeline("ringBufferPipeline"),
         m_sourceBins(NULL),
         m_sinkBin(this,60,out),
         m_browserDone(false),
         m_fatal(false),
+#ifdef _USE_NMEA        
         m_nmea(this),
+#endif        
         m_browser(staticBrowse,this)
 
     {
         // use NTP clock
-        UseNTPv4Clock();
+        //UseNTPv4Clock();
 
         while(!m_browserDone)
         {
@@ -42,10 +43,10 @@ public:
         }
 
         // use real time
-        //setRealtimeClock();
+        setRealtimeClock();
 
         // mark up the records
-        std::vector<std::string> urls;
+        std::vector<std::string> urls={"rtsp://rpizerocam:8554/cam"};
         for(auto each=arecords.begin();each!=arecords.end();each++)
         {
             // rtsp://vpnhack:8554/cam
@@ -80,20 +81,23 @@ public:
 
     bool buildPipeline()
     {
-        // //ConnectPipeline(m_nmea,m_sinkBin);
-        GstCaps *subtitlecaps=gst_caps_from_string("text/any");
+#ifdef _USE_NMEA
+        ConnectPipeline(m_nmea,m_sinkBin);
+#endif
+
+//        GstCaps *subtitlecaps=gst_caps_from_string("text/any");
         //gst_element_link_filtered(FindNamedPlugin(m_nmea),FindNamedPlugin(m_sinkBin),subtitlecaps);
-        bool success=gst_element_link_pads(FindNamedPlugin(m_nmea),NULL,FindNamedPlugin(m_sinkBin),"subtitle_%u");
+        //bool success=gst_element_link_pads(FindNamedPlugin(m_nmea),NULL,FindNamedPlugin(m_sinkBin),"subtitle_%u");
 
 
-        // //ConnectPipeline(*m_sourceBins,m_sinkBin);
-        GstCaps *videocaps=gst_caps_from_string("video/any");
+        ConnectPipeline(*m_sourceBins,m_sinkBin);
+//        GstCaps *videocaps=gst_caps_from_string("video/any");
 //        success=gst_element_link_filtered(FindNamedPlugin(*m_sourceBins),FindNamedPlugin(m_sinkBin),videocaps);
-        success=gst_element_link(FindNamedPlugin(*m_sourceBins),FindNamedPlugin(m_sinkBin));
+//        success=gst_element_link(FindNamedPlugin(*m_sourceBins),FindNamedPlugin(m_sinkBin));
 
 
-        gst_caps_unref(videocaps);
-        gst_caps_unref(subtitlecaps);
+//        gst_caps_unref(videocaps);
+        //gst_caps_unref(subtitlecaps);
         
         // gst_element_link(FindNamedPlugin(*m_sourceBins),FindNamedPlugin(m_sinkBin));
         // gst_element_link(FindNamedPlugin(m_nmea),FindNamedPlugin(m_sinkBin));
@@ -164,7 +168,9 @@ protected:
     multiRemoteSourceBin<rtspSourceBin> *m_sourceBins;
     gstSplitMuxOutBin m_sinkBin;
     std::thread m_browser;
+#ifdef _USE_NMEA    
     gstNmeaToSubs m_nmea;
+#endif    
 };
 
 
@@ -173,11 +179,18 @@ protected:
 
 int main()
 {
-    const char *location="rtsp://vpnhack:8554/cam";
-    const char *destination="/workspaces/dashcam/out_%05d.mp4";
+    char buffer[200];
+
+    struct tm *info; 
+    time_t now=time(NULL);
+    info = gmtime(&now);
+
+    strftime(buffer,sizeof(buffer)-1,"/vids/%F%H%MZ_%%05d.mp4",info);
+
+    const char *destination=buffer;
 
     gstreamPipeline thePipeline("mainPipeline");
-    ringBufferPipeline ringPipeline(location,destination);
-    ringPipeline.Run(30);
+    ringBufferPipeline ringPipeline(destination);
+    ringPipeline.Run(360);
 
 }

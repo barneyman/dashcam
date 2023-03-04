@@ -7,3 +7,4 @@ runserver.sh
 **/*.a
 rtsp-srv
 joiner
+**/*.deb
