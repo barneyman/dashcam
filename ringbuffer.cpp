@@ -135,15 +135,15 @@ public:
 
     virtual void bufferProbe(GstPad * pad,GstPadProbeInfo * padinfo)
     {
-        if(!m_dataFlowing)
-        {
-            GstBuffer *theBuffer=gst_pad_probe_info_get_buffer(padinfo);
-            GstEvent *gap=gst_event_new_gap(0,theBuffer->pts);
-            if(!gst_pad_push_event(pad,gap))
-            {
-                GST_ERROR_OBJECT (m_pipeline, "gst_pad_push_event gap failed");
-            }
-        }
+        // if(!m_dataFlowing)
+        // {
+        //     GstBuffer *theBuffer=gst_pad_probe_info_get_buffer(padinfo);
+        //     GstEvent *gap=gst_event_new_gap(0,theBuffer->pts);
+        //     if(!gst_pad_push_event(pad,gap))
+        //     {
+        //         GST_ERROR_OBJECT (m_pipeline, "gst_pad_push_event gap failed");
+        //     }
+        // }
 
         m_dataFlowing=true;
     }
