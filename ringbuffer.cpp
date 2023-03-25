@@ -27,10 +27,10 @@ class ringBufferPipeline : public gstreamPipeline
 {
 
 public:
-    ringBufferPipeline(const char *out):
+    ringBufferPipeline(const char *out, unsigned sliceMins=15):
         gstreamPipeline("ringBufferPipeline"),
         m_sourceBins(NULL),
-        m_sinkBin(this,60,out),
+        m_sinkBin(this,sliceMins*60,out),
         m_browserDone(false),
         m_fatal(false),
 #ifdef _USE_NMEA        

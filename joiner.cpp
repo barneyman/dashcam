@@ -15,7 +15,7 @@
 #include <dirent.h> 
 
 
-//#define _USE_META
+#define _USE_PANGO
 #define _USE_MULTI
 
 class joinVidsPipeline : public gstreamPipeline
@@ -28,14 +28,18 @@ public:
 #else        
         m_src(this,files[0].c_str()),
 #endif        
-#ifdef _USE_META
+#ifdef _USE_PANGO
         m_meta(this),
 #endif        
         m_out(this,destination)
 
     {
-#ifdef _USE_META
+#ifdef _USE_PANGO
+#ifdef _USE_MULTI        
         ConnectPipeline(m_multisrc,m_out,m_meta);
+#else
+        ConnectPipeline(m_src,m_out,m_meta);
+#endif        
 #else
 #ifdef _USE_MULTI        
         ConnectPipeline(m_multisrc,m_out);
@@ -54,7 +58,7 @@ protected:
 #endif    
 
     gstMP4OutBin m_out;
-#ifdef _USE_META
+#ifdef _USE_PANGO
     gstMultiNmeaJsonToPangoRenderBin m_meta;
 #endif    
 };
@@ -91,10 +95,11 @@ int main()
 
     //gstreamDemuxExamineDiscrete tester("/vids/2023-02-262220_00004.mp4","qtdemux");
 
+#ifdef _USE_MULTI        
     std::vector<std::string> files=collectFiles("/vids/");
-
-    //std::vector<std::string> files={"/vids/2023-02-262220_00000.mp4"};
-
+#else
+    std::vector<std::string> files={"/vids/2023-03-060828Z_00000.mp4"};
+#endif
     joinVidsPipeline joiner(files,"/workspaces/dashcam/combined.mp4");
     joiner.Run();
 
