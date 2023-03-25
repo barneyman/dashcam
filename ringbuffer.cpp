@@ -15,6 +15,11 @@
 #include "mdns_cpp/macros.hpp"
 #include "mdns_cpp/utils.hpp"
 
+#ifdef _DEBUG_TIMESTAMPS
+#include "gstreamHelpers/myplugins/gstptsnormalise.h"
+#endif
+
+#include "gstreamHelpers/helperBins/probeHelper.h"
 
 #define _USE_NMEA
 
@@ -30,6 +35,8 @@ public:
         m_fatal(false),
 #ifdef _USE_NMEA        
         m_nmea(this),
+        padProber(this),
+        m_dataFlowing(false),
 #endif        
         m_browser(staticBrowse,this)
 
@@ -82,27 +89,63 @@ public:
     bool buildPipeline()
     {
 #ifdef _USE_NMEA
+#ifdef _DEBUG_TIMESTAMPS
+        ptsnormalise_registerRunTimePlugin();
+        AddPlugin("ptsnormalise","ptsnormalise_subs");
+        ConnectPipeline(m_nmea,m_sinkBin,"ptsnormalise_subs");
+#else
         ConnectPipeline(m_nmea,m_sinkBin);
+#endif        
+
+
+#ifdef _DEBUG_TIMESTAMPS
+        AddPlugin("ptsnormalise","ptsnormalise_video");
+        ConnectPipeline(*m_sourceBins,m_sinkBin,"ptsnormalise_video");
+#else
+        ConnectPipeline(*m_sourceBins,m_sinkBin);
+#endif
 #endif
 
-//        GstCaps *subtitlecaps=gst_caps_from_string("text/any");
-        //gst_element_link_filtered(FindNamedPlugin(m_nmea),FindNamedPlugin(m_sinkBin),subtitlecaps);
-        //bool success=gst_element_link_pads(FindNamedPlugin(m_nmea),NULL,FindNamedPlugin(m_sinkBin),"subtitle_%u");
+        // now set up the pad block - the RTSP takes some time to start playing
+        // if we send subs before it the runtime gets bent and join fails with decreasing timestamps
 
-
-        ConnectPipeline(*m_sourceBins,m_sinkBin);
-//        GstCaps *videocaps=gst_caps_from_string("video/any");
-//        success=gst_element_link_filtered(FindNamedPlugin(*m_sourceBins),FindNamedPlugin(m_sinkBin),videocaps);
-//        success=gst_element_link(FindNamedPlugin(*m_sourceBins),FindNamedPlugin(m_sinkBin));
-
-
-//        gst_caps_unref(videocaps);
-        //gst_caps_unref(subtitlecaps);
-        
-        // gst_element_link(FindNamedPlugin(*m_sourceBins),FindNamedPlugin(m_sinkBin));
-        // gst_element_link(FindNamedPlugin(m_nmea),FindNamedPlugin(m_sinkBin));
+        attachProbes("nmeasource",GST_PAD_PROBE_TYPE_BLOCK,true,&m_nmea);
+        // TODO when handling multiple video streams this needs to block all until all streams are producing
+        attachProbes(*m_sourceBins,GST_PAD_PROBE_TYPE_BUFFER);
 
         return true;
+    }
+
+    virtual GstPadProbeReturn blockProbe(GstPad * pad,GstPadProbeInfo * padinfo)
+    {
+        // }
+         GST_INFO_OBJECT (m_pipeline, "Probetype %s\r",getProbeNames(padinfo).c_str());
+
+        if(padinfo->type & GST_PAD_PROBE_TYPE_BUFFER)
+        {
+            if(m_dataFlowing)
+            {
+                return GST_PAD_PROBE_REMOVE;
+            }
+            GST_INFO_OBJECT (m_pipeline, "dropped");
+            return GST_PAD_PROBE_DROP;
+        }
+        return GST_PAD_PROBE_PASS;
+    }
+
+    virtual void bufferProbe(GstPad * pad,GstPadProbeInfo * padinfo)
+    {
+        if(!m_dataFlowing)
+        {
+            GstBuffer *theBuffer=gst_pad_probe_info_get_buffer(padinfo);
+            GstEvent *gap=gst_event_new_gap(0,theBuffer->pts);
+            if(!gst_pad_push_event(pad,gap))
+            {
+                GST_ERROR_OBJECT (m_pipeline, "gst_pad_push_event gap failed");
+            }
+        }
+
+        m_dataFlowing=true;
     }
 
     virtual void SplitMuxOpenedSplit(GstClockTime, const char*newFile)
@@ -170,6 +213,7 @@ protected:
     std::thread m_browser;
 #ifdef _USE_NMEA    
     gstNmeaToSubs m_nmea;
+    volatile bool m_dataFlowing;
 #endif    
 };
 
