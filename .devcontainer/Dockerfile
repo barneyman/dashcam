@@ -42,7 +42,7 @@ RUN apt-get update && apt-get -y install \
       python3.9 python3.9-dev python3-distutils python3-pip \
       libmount-dev bison flex pkg-config autotools-dev libffi-dev \
       librtmp-dev libx264-dev libsoup2.4-1 libsoup2.4-dev libpng-dev \
-      build-essential ninja-build git xvfb cmake
+      build-essential ninja-build git xvfb cmake libboost-all-dev
 
 # nvidia gpu support
 # ENV NVIDIA_DRIVER_CAPABILITIES=all
