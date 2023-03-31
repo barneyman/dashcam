@@ -102,18 +102,28 @@ RUN cd ./gst-build/gst-build-$GST_VERSION && \
 ENV LD_LIBRARY_PATH=/usr/local/lib/x86_64-linux-gnu:/usr/local/lib:${LD_LIBRARY_PATH}
 ENV GI_TYPELIB_PATH=/usr/lib/x86_64-linux-gnu/girepository-1.0:/usr/local/lib/x86_64-linux-gnu/girepository-1.0
 
-WORKDIR /
-#####################
-
-
-
-
 # rpi enc hardware
 RUN apt install -y gstreamer1.0-omx-generic
 # intel vaapi hw encoding 
 RUN apt install -y gstreamer1.0-vaapi
+
 # sql dev
-RUN apt install -y libmariadb-dev
+#RUN apt install -y libmariadb-dev
+WORKDIR /mariadb
+RUN git clone https://github.com/mariadb-corporation/mariadb-connector-c && \
+        cd mariadb-connector-c && \
+        mkdir build && \
+        cd build && \
+        cmake .. && \
+        make && \
+        make install
+
+RUN echo '/usr/local/lib/mariadb' > /etc/ld.so.conf.d/mariadb.conf && \
+        ldconfig
+#####################
+
+
+WORKDIR /
 
 
 

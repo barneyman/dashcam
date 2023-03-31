@@ -6,9 +6,12 @@ INC = 1
 # RTSP_SERVER
 GST_RTSP_SRV_CONFIG = `pkg-config --cflags --libs gstreamer-rtsp-server-1.0 gstreamer-1.0`
 GST_CONFIG = `pkg-config --cflags --libs gstreamer-1.0 gstreamer-base-1.0 gstreamer-net-1.0`
-MYSQLCONFIG = `pkg-config --cflags --libs mariadb`
+# when installed vua apt
+#MYSQLCONFIG = `pkg-config --cflags --libs mariadb`
+# when built
+MYSQLCONFIG = `pkg-config --cflags --libs libmariadb`
 
-all: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB)ringbuffer joiner
+all: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB)ringbuffer joiner test_sql
 
 
 # internal libs
@@ -46,6 +49,8 @@ ringbuffer: ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP
 joiner: joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h) $(wildcard ./*.h)
 	g++ -g -o $@ joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
 
+test_sql: test_sql.cpp $(wildcard ./*.h)
+	g++ -g -o $@ test_sql.cpp $(MYSQLCONFIG) $(GST_CONFIG)
 
 # preceeding - means 'let it fail'
 clean:

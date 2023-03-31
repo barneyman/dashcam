@@ -21,16 +21,26 @@
 
 #include "gstreamHelpers/helperBins/probeHelper.h"
 
-#define _USE_NMEA
+#include "dashcam_sql.h"
+#include "rb_tasks.h"
 
-class ringBufferPipeline : public gstreamPipeline
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
+
+#define _USE_NMEA
+//#define _USE_MDNS
+
+// sudo setcap cap_net_admin=eip ./ringbuffer
+
+class ringBufferPipeline : public gstreamPipeline, public padProber
 {
 
 public:
-    ringBufferPipeline(const char *out, unsigned sliceMins=15):
+    ringBufferPipeline(const char *outdir, unsigned sliceMins=15):
         gstreamPipeline("ringBufferPipeline"),
         m_sourceBins(NULL),
-        m_sinkBin(this,sliceMins*60,out),
         m_browserDone(false),
         m_fatal(false),
 #ifdef _USE_NMEA        
@@ -38,22 +48,38 @@ public:
         padProber(this),
         m_dataFlowing(false),
 #endif        
-        m_browser(staticBrowse,this)
-
+        m_browser(staticBrowse,this),
+        m_sql("debian","dashcam","dashcam","dashcam")
     {
         // use NTP clock
         //UseNTPv4Clock();
-
+#ifdef _USE_MDNS
         while(!m_browserDone)
         {
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
+#endif        
 
         // use real time
         setRealtimeClock();
 
+        char buffer[300];
+        struct tm *info; 
+        time_t now=time(NULL);
+        info = gmtime(&now);
+
+        m_outspec=outdir;
+
+        strftime(buffer,sizeof(buffer)-1,"/%F%H%MZ_%%05d.mp4",info);
+        m_outspec+=buffer;
+
+
+        m_sinkBin=new gstSplitMuxOutBin(this,sliceMins*60,m_outspec.c_str());
+
+
         // mark up the records
-        std::vector<std::string> urls={"rtsp://rpizerocam:8554/cam"};
+        //std::vector<std::string> urls={"rtsp://rpizerocam:8554/cam"};
+        std::vector<std::string> urls={"rtsp://vpnhack:8554/cam"};
         for(auto each=arecords.begin();each!=arecords.end();each++)
         {
             // rtsp://vpnhack:8554/cam
@@ -70,6 +96,7 @@ public:
 
     ~ringBufferPipeline()
     {
+        delete m_sinkBin;
         delete m_sourceBins;
         m_browser.join();
     }
@@ -92,17 +119,17 @@ public:
 #ifdef _DEBUG_TIMESTAMPS
         ptsnormalise_registerRunTimePlugin();
         AddPlugin("ptsnormalise","ptsnormalise_subs");
-        ConnectPipeline(m_nmea,m_sinkBin,"ptsnormalise_subs");
+        ConnectPipeline(m_nmea,*m_sinkBin,"ptsnormalise_subs");
 #else
-        ConnectPipeline(m_nmea,m_sinkBin);
+        ConnectPipeline(m_nmea,*m_sinkBin);
 #endif        
 
 
 #ifdef _DEBUG_TIMESTAMPS
         AddPlugin("ptsnormalise","ptsnormalise_video");
-        ConnectPipeline(*m_sourceBins,m_sinkBin,"ptsnormalise_video");
+        ConnectPipeline(*m_sourceBins,*m_sinkBin,"ptsnormalise_video");
 #else
-        ConnectPipeline(*m_sourceBins,m_sinkBin);
+        ConnectPipeline(*m_sourceBins,*m_sinkBin);
 #endif
 #endif
 
@@ -148,13 +175,31 @@ public:
         m_dataFlowing=true;
     }
 
-    virtual void SplitMuxOpenedSplit(GstClockTime, const char*newFile)
+    virtual void SplitMuxOpenedSplit(GstClockTime splitStart, const char*newFile)
     {
+        m_currentChapterGuid=boost::uuids::random_generator()();
+
+        m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(newFile,
+                                                        m_journeyGuid,
+                                                        m_currentChapterGuid,
+                                                        (splitStart-m_basetime)));
+
+
+        GST_ERROR_OBJECT (m_pipeline, "Opened split file - start %" GST_TIME_FORMAT " basetime %" GST_TIME_FORMAT "",
+            GST_TIME_ARGS(splitStart),
+            GST_TIME_ARGS(m_basetime)
+            );
 
     }
 
-    virtual void SplitMuxClosedSplit(GstClockTime, const char*newFile)
+    virtual void SplitMuxClosedSplit(GstClockTime splitEnd, const char*newFile)
     {
+        m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(m_journeyGuid,
+                                                        m_currentChapterGuid,
+                                                        (splitEnd-m_basetime)));
+
+
+        GST_ERROR_OBJECT (m_pipeline, "Closed split file");
         
     }
 
@@ -200,7 +245,38 @@ public:
         gstreamPipeline::elementMessageHandler(msg);
     }
 
+    void Run()
+    {
+        // start a journey
+        m_journeyGuid=boost::uuids::random_generator()();
+        m_scheduler.m_taskQueue.safe_push(
+            sqlWorkJobs(sqlWorkJobs::taskType::swjStartJourney,m_journeyGuid));
 
+        // run
+        gstreamPipeline::Run(60*12);
+
+        // close a journey
+        m_scheduler.m_taskQueue.safe_push(
+            sqlWorkJobs(sqlWorkJobs::taskType::swjEndJourney,m_journeyGuid));
+
+        // TODO fix this
+        sleep(10);
+
+        m_scheduler.stop();
+
+    }
+
+    // from pipeline
+    virtual void pipelineStateChangeMessageHandler(GstMessage*msg)
+    {
+        GstState oldState, newState;
+        gst_message_parse_state_changed(msg, &oldState, &newState, NULL);
+        if(newState==GST_STATE_PLAYING)
+        {
+            m_basetime=gstreamPipeline::GetTimeSinceEpoch();
+            m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(m_journeyGuid,m_basetime));
+        }
+    }
 
 
 protected:
@@ -209,8 +285,18 @@ protected:
     std::vector<std::string> arecords;
     
     multiRemoteSourceBin<rtspSourceBin> *m_sourceBins;
-    gstSplitMuxOutBin m_sinkBin;
+    gstSplitMuxOutBin *m_sinkBin;
     std::thread m_browser;
+
+    std::string m_outspec;
+
+    mariaDBconnection m_sql;
+
+    sqlWorkerThread<sqlWorkJobs> m_scheduler;
+    boost::uuids::uuid m_journeyGuid, m_currentChapterGuid;
+    GstClockTime m_basetime;
+
+
 #ifdef _USE_NMEA    
     gstNmeaToSubs m_nmea;
     volatile bool m_dataFlowing;
@@ -223,18 +309,10 @@ protected:
 
 int main()
 {
-    char buffer[200];
-
-    struct tm *info; 
-    time_t now=time(NULL);
-    info = gmtime(&now);
-
-    strftime(buffer,sizeof(buffer)-1,"/vids/%F%H%MZ_%%05d.mp4",info);
-
-    const char *destination=buffer;
 
     gstreamPipeline thePipeline("mainPipeline");
-    ringBufferPipeline ringPipeline(destination);
-    ringPipeline.Run(360);
+    ringBufferPipeline ringPipeline("/vids",2);
+
+    ringPipeline.Run();
 
 }
