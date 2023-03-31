@@ -8,3 +8,4 @@ runserver.sh
 rtsp-srv
 joiner
 **/*.deb
+test_sql
