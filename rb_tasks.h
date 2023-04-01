@@ -50,9 +50,7 @@ class taskScheduler
 public:
 
     taskScheduler():
-        m_taskQueueThread(staticEntry,this),
-        m_taskStop(false),
-        m_taskRunning(false)
+        m_taskQueueThread(staticEntry,this)
     {
     }
 
@@ -83,6 +81,7 @@ public:
     void threadEntry()
     {
         m_taskRunning=true;
+        m_taskStop=false;
 
         while(!m_taskStop)
         {
@@ -91,7 +90,7 @@ public:
                 item popped=m_taskQueue.safe_pop();
                 runtask(popped);
             }
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 
         m_taskRunning=false;
