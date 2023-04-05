@@ -37,7 +37,7 @@
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
-            "environment": [    {"name":"GST_DEBUG", "value":"3"},//,nmeasource:3,basesrc:3,ptsnormalise:5,split*:5,rtsp*:5"},
+            "environment": [    {"name":"GST_DEBUG", "value":"3,barrier:6"},//,nmeasource:3,basesrc:3,ptsnormalise:5,split*:5,rtsp*:5"},
                                 // {"name":"GST_DEBUG","value":"GST_TRACER:7"},
                                 // {"name": "GST_TRACERS", "value": "leaks(stack-traces-flags=full)"},
                                 {"name": "GST_DEBUG_FILE", "value": "/workspaces/dashcam/ringbuffer.log"},

@@ -241,12 +241,12 @@ protected:
 
     void startJourney()
     {
-        startEndJourney("CALL new_journey(?,?)");
+        startEndJourney("CALL sp_new_journey(?,?)");
     }
 
     void endJourney()
     {
-        startEndJourney("CALL end_journey(?,?)");
+        startEndJourney("CALL sp_end_journey(?,?)");
     }
 
     void startEndJourney(const char*sql_sp)
@@ -273,7 +273,7 @@ protected:
         mariaBinding<journey_params,2> updateParams;
         updateParams.m_id=boost::uuids::to_string(m_journeyid);
         updateParams.m_when=maria_timestamp(m_basetime);
-        mySQLprepared<journey_params,2> callUpdateJourney(m_sql,"CALL set_journey_basetime(?,?)");
+        mySQLprepared<journey_params,2> callUpdateJourney(m_sql,"CALL sp_set_journey_basetime(?,?)");
 
         if(callUpdateJourney.bind(updateParams))
         {
@@ -296,7 +296,7 @@ protected:
         updateParams.m_chapterid=boost::uuids::to_string(m_chapterid);
         updateParams.m_filepath=m_filepath;
         updateParams.m_startms=m_offsetms;
-        mySQLprepared<chapter_params,4> callUpdateJourney(m_sql,"CALL create_journey_chapter(?,?,?,?)");
+        mySQLprepared<chapter_params,4> callUpdateJourney(m_sql,"CALL sp_create_journey_chapter(?,?,?,?)");
 
         if(callUpdateJourney.bind(updateParams))
         {
@@ -317,7 +317,7 @@ protected:
         updateParams.m_journeyid=boost::uuids::to_string(m_journeyid);
         updateParams.m_chapterid=boost::uuids::to_string(m_chapterid);
         updateParams.m_endms=m_offsetms;
-        mySQLprepared<close_chapter_params,3> callUpdateJourney(m_sql,"CALL close_journey_chapter(?,?,?)");
+        mySQLprepared<close_chapter_params,3> callUpdateJourney(m_sql,"CALL sp_close_journey_chapter(?,?,?)");
 
         if(callUpdateJourney.bind(updateParams))
         {

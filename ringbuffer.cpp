@@ -31,10 +31,18 @@
 
 #define _USE_NMEA
 //#define _USE_MDNS
+//#define _USE_PROBES
+#define _USE_BARRIER
+
+#ifdef _USE_BARRIER
+#include "gstreamHelpers/myplugins/gstbarrier.h"
+#endif
 
 // sudo setcap cap_net_admin=eip ./ringbuffer
 
-class ringBufferPipeline : public gstreamPipeline, public padProber
+class ringBufferPipeline : 
+    public gstreamPipeline, 
+    public padProber
 {
 
 public:
@@ -115,32 +123,58 @@ public:
 
     bool buildPipeline()
     {
+#ifdef _USE_BARRIER
+        barrier_registerRunTimePlugin();
+        AddPlugin("barrier");
+#endif
+
 #ifdef _USE_NMEA
-#ifdef _DEBUG_TIMESTAMPS
+ #ifdef _DEBUG_TIMESTAMPS
         ptsnormalise_registerRunTimePlugin();
         AddPlugin("ptsnormalise","ptsnormalise_subs");
         ConnectPipeline(m_nmea,*m_sinkBin,"ptsnormalise_subs");
+ #else
+  #ifdef _USE_BARRIER
+        bool linked=ConnectPipeline(m_nmea,*m_sinkBin,"barrier");
+        //   bool linked=gst_element_link_many(
+        //     FindNamedPlugin(m_nmea),
+        //     FindNamedPlugin("barrier"),
+        //     FindNamedPlugin(*m_sinkBin),
+        //     NULL
+        // );
 #else
         ConnectPipeline(m_nmea,*m_sinkBin);
-#endif        
+  #endif
+ #endif        
 
 
-#ifdef _DEBUG_TIMESTAMPS
+ #ifdef _DEBUG_TIMESTAMPS
         AddPlugin("ptsnormalise","ptsnormalise_video");
         ConnectPipeline(*m_sourceBins,*m_sinkBin,"ptsnormalise_video");
-#else
+ #else
+  #ifdef _USE_BARRIER
+        linked=ConnectPipeline(*m_sourceBins,*m_sinkBin,"barrier");
+        // linked=gst_element_link_many(
+        //     FindNamedPlugin(*m_sourceBins),
+        //     FindNamedPlugin("barrier"),
+        //     FindNamedPlugin(*m_sinkBin),
+        //     NULL
+        // );
+  #else        
         ConnectPipeline(*m_sourceBins,*m_sinkBin);
-#endif
+  #endif
+ #endif
 #endif
 
         // now set up the pad block - the RTSP takes some time to start playing
         // if we send subs before it the runtime gets bent and join fails with decreasing timestamps
-
+#ifdef _USE_PROBES
         attachProbes("nmeasource",GST_PAD_PROBE_TYPE_BLOCK,true,&m_nmea);
         // TODO when handling multiple video streams this needs to block all until all streams are producing
         attachProbes(*m_sourceBins,GST_PAD_PROBE_TYPE_BUFFER);
+#endif
 
-        return true;
+        return linked;
     }
 
     virtual GstPadProbeReturn blockProbe(GstPad * pad,GstPadProbeInfo * padinfo)
@@ -182,7 +216,7 @@ public:
         m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(newFile,
                                                         m_journeyGuid,
                                                         m_currentChapterGuid,
-                                                        (splitStart-m_basetime)));
+                                                        (splitStart/GST_MSECOND)));
 
 
         GST_ERROR_OBJECT (m_pipeline, "Opened split file - start %" GST_TIME_FORMAT " basetime %" GST_TIME_FORMAT "",
@@ -196,7 +230,7 @@ public:
     {
         m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(m_journeyGuid,
                                                         m_currentChapterGuid,
-                                                        (splitEnd-m_basetime)));
+                                                        (splitEnd/GST_MSECOND)));
 
 
         GST_ERROR_OBJECT (m_pipeline, "Closed split file");
@@ -253,14 +287,14 @@ public:
             sqlWorkJobs(sqlWorkJobs::taskType::swjStartJourney,m_journeyGuid));
 
         // run
-        gstreamPipeline::Run(60*12);
+        gstreamPipeline::Run(60*3);
 
         // close a journey
         m_scheduler.m_taskQueue.safe_push(
             sqlWorkJobs(sqlWorkJobs::taskType::swjEndJourney,m_journeyGuid));
 
         // TODO fix this
-        sleep(10);
+        sleep(2);
 
         m_scheduler.stop();
 
