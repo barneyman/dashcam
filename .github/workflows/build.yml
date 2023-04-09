@@ -17,31 +17,49 @@ jobs:
           submodules: 'recursive'
 
       - name: tools
-        run: |
-          sudo apt install -y libboost-all-dev
-
-      - name: gstreamer
-        run: |
-          sudo apt install -y gstreamer1.0-plugins-base \
-            gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
-            gstreamer1.0-plugins-ugly gstreamer1.0-libav \
-            gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa \
-            gstreamer1.0-gl  
-
-      - name: gstreamer-dev
-        run: |
-          sudo apt install -y libpango1.0-dev
-          sudo apt install -y libavfilter-dev
-          sudo apt install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
-            libgstreamer-plugins-bad1.0-dev 
-          sudo apt install -y libgstrtspserver-1.0-dev
-
-      - name: sql-dev
-        run: |
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: armv7
+          distro: bullseye
+          githubToken: ${{ github.token }}
+          run: |
+            sudo apt install -y libboost-all-dev
+            sudo apt install -y gstreamer1.0-plugins-base \
+              gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
+              gstreamer1.0-plugins-ugly gstreamer1.0-libav \
+              gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa \
+              gstreamer1.0-gl  
+            sudo apt install -y libpango1.0-dev
+            sudo apt install -y libavfilter-dev
+            sudo apt install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+              libgstreamer-plugins-bad1.0-dev 
+            sudo apt install -y libgstrtspserver-1.0-dev
             sudo apt install -y libmariadb-dev
+            make
+         
 
-      - name: compile
-        run: make
+      # - name: gstreamer
+      #   run: |
+      #     sudo apt install -y gstreamer1.0-plugins-base \
+      #       gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
+      #       gstreamer1.0-plugins-ugly gstreamer1.0-libav \
+      #       gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa \
+      #       gstreamer1.0-gl  
+
+      # - name: gstreamer-dev
+      #   run: |
+      #     sudo apt install -y libpango1.0-dev
+      #     sudo apt install -y libavfilter-dev
+      #     sudo apt install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+      #       libgstreamer-plugins-bad1.0-dev 
+      #     sudo apt install -y libgstrtspserver-1.0-dev
+
+      # - name: sql-dev
+      #   run: |
+      #       sudo apt install -y libmariadb-dev
+
+      # - name: compile
+      #   run: make
 
       # - name: package
       #   uses: kentik/pkg@1.0.0-rc8
