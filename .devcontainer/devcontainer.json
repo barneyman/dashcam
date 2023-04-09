@@ -7,7 +7,12 @@
 		"target": "gstreamer_dev"	// dev headers, no debug, quick to construct, poor debug
 		//"target": "gstreamer_debug" // gstreamer source, compiled, mariadbclient compiled, slooooow to construct, great debug
 	},
-
+	"extensions": [
+						"cweijan.git-graph-history2",
+						"yzhang.markdown-all-in-one",
+						"tintinweb.graphviz-interactive-preview",
+						"gruntfuggly.todo-tree"
+					],
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
