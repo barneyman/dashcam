@@ -1,7 +1,7 @@
 name: Compile and Package
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
   pull_request:
     types: [opened, synchronize, reopened]
