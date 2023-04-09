@@ -51,8 +51,17 @@ jobs:
             apt install -y libmariadb-dev
             apt install -y build-essential
             apt install -y cmake
+
           run: |
-            make
+              make github ARCH=${{ matrix.arch }}
+      - name: zip
+        run: |
+          run: tar -czvf ${{ matrix.arch }}.tar.gz *-${{ matrix.arch }}
+      - name: artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.arch }}
+          path: ${{ matrix.arch }}.tar.gz
          
 
       # - name: gstreamer
