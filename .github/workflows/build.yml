@@ -21,7 +21,7 @@ jobs:
         with:
           arch: armv7
           distro: bullseye
-          githubToken: ${{ github.token }}
+          githubToken: ${{ secrets.PUSH_PACKAGE }}
           install: |
             apt update && apt upgrade -y
             apt install -y libboost-all-dev
