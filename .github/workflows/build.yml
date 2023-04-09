@@ -33,9 +33,8 @@ jobs:
           # to push a package, generate a short term PAT with write access
           # do your setups, thereby pushing the packages, then revoke the PAT
           # and replace with your github token
-          # githubToken: ${{ github.token }}
-
-          githubToken: ${{ secrets.PUSH_PACKAGE }}
+          githubToken: ${{ github.token }}
+          # githubToken: ${{ secrets.PUSH_PACKAGE }}
           install: |
             apt update && apt upgrade -y
             apt install -y libboost-all-dev
