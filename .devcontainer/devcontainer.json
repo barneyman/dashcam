@@ -3,7 +3,9 @@
 {
 	"name": "C++",
 	"build": {
-		"dockerfile": "Dockerfile"
+		"dockerfile": "Dockerfile",
+		"target": "gstreamer_dev"	// dev headers, no debug, quick to construct, poor debug
+		//"target": "gstreamer_debug" // gstreamer source, compiled, mariadbclient compiled, slooooow to construct, great debug
 	},
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
@@ -21,6 +23,7 @@
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	"remoteUser": "root",
 
-	"runArgs": ["--device=/dev/dri/card0","--device=/dev/dri/renderD128", "--network=host", "-v","/home/pi/source/bjf/dashcam/vids:/vids", "--cap-add=cap_net_admin"]
+	//"runArgs": ["--device=/dev/dri/card0","--device=/dev/dri/renderD128", "--network=host", "-v","/home/pi/source/bjf/dashcam/vids:/vids", "--cap-add=cap_net_admin"]
+	"runArgs": ["--network=host", "-v","${localWorkspaceFolder}/vids:/vids", "--cap-add=cap_net_admin"]
 
 }
