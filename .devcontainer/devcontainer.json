@@ -11,7 +11,9 @@
 						"cweijan.git-graph-history2",
 						"yzhang.markdown-all-in-one",
 						"tintinweb.graphviz-interactive-preview",
-						"gruntfuggly.todo-tree"
+						"gruntfuggly.todo-tree",
+						"github.vscode-github-actions",
+						"ms-vscode.makefile-tools"
 					],
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
