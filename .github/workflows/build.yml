@@ -22,7 +22,7 @@ jobs:
           arch: armv7
           distro: bullseye
           githubToken: ${{ github.token }}
-          run: |
+          install: |
             apt update && apt upgrade -y
             apt install -y libboost-all-dev
             apt install -y gstreamer1.0-plugins-base \
@@ -36,6 +36,8 @@ jobs:
               libgstreamer-plugins-bad1.0-dev 
             apt install -y libgstrtspserver-1.0-dev
             apt install -y libmariadb-dev
+            apt install -y build-essential
+          run: |
             make
          
 
