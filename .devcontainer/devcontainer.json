@@ -8,7 +8,7 @@
 		//"target": "gstreamer_debug" // gstreamer source, compiled, mariadbclient compiled, slooooow to construct, great debug
 	},
 	"extensions": [
-						"cweijan.git-graph-history2",
+						"mhutchie.git-graph",
 						"yzhang.markdown-all-in-one",
 						"tintinweb.graphviz-interactive-preview",
 						"gruntfuggly.todo-tree",
