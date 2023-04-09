@@ -10,6 +10,14 @@ jobs:
   compile:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        include:
+          - arch: aarch64
+            distro: bullseye
+          - arch: armv7
+            distro: bullseye
+
     steps:
       - name: checkout
         uses: actions/checkout@v2.7.0
@@ -19,8 +27,14 @@ jobs:
       - name: tools
         uses: uraimo/run-on-arch-action@v2
         with:
-          arch: armv7
-          distro: bullseye
+          arch: ${{ matrix.arch }}
+          distro: ${{ matrix.distro }}
+          # github.token only has read rights from the packages
+          # to push a package, generate a short term PAT with write access
+          # do your setups, thereby pushing the packages, then revoke the PAT
+          # and replace with your github token
+          # githubToken: ${{ github.token }}
+
           githubToken: ${{ secrets.PUSH_PACKAGE }}
           install: |
             apt update && apt upgrade -y
