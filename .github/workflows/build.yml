@@ -9,6 +9,8 @@ on:
 jobs:
   compile:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
 
     strategy:
       matrix:
@@ -30,7 +32,8 @@ jobs:
           arch: ${{ matrix.arch }}
           distro: ${{ matrix.distro }}
           # github.token doesn't grant access into packages
-          githubToken: ${{ secrets.PUSH_PACKAGE }}
+          # githubToken: ${{ secrets.PUSH_PACKAGE }}
+          githubToken: ${{ github.token }}
           install: |
             apt update && apt upgrade -y
             apt install -y libboost-all-dev
