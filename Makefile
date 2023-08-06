@@ -43,13 +43,17 @@ $(MDNS_CPP_LIB):
 
 
 ringbuffer: ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h)
-	g++ -g -o $@-$(ARCH) ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
+	g++ -g -o $@$(ARCH) ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
 
 joiner: joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h) $(wildcard ./*.h)
-	g++ -g -o $@-$(ARCH) joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
+	g++ -g -o $@$(ARCH) joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
 
 test_sql: test_sql.cpp $(wildcard ./*.h)
-	g++ -g -o $@-$(ARCH) test_sql.cpp $(MYSQLCONFIG) $(GST_CONFIG)
+	g++ -g -o $@$(ARCH) test_sql.cpp $(MYSQLCONFIG) $(GST_CONFIG)
+
+test_nobins: test_nobins.cpp $(wildcard ./*.h) $(GSTHELPERLIB)
+	g++ -g -o $@$(ARCH) test_nobins.cpp $(GST_CONFIG) $(GSTHELPERLIB)
+
 
 caps: ringbuffer
 	sudo setcap cap_net_admin=eip ./ringbuffer

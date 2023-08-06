@@ -62,5 +62,6 @@
         "streambuf": "cpp",
         "typeinfo": "cpp",
         "cinttypes": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }
