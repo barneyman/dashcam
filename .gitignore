@@ -9,3 +9,4 @@ rtsp-srv
 joiner
 **/*.deb
 test_sql
+test_nobins

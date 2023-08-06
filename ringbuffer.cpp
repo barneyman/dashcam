@@ -15,6 +15,7 @@
 #include "mdns_cpp/macros.hpp"
 #include "mdns_cpp/utils.hpp"
 
+#define _DEBUG_TIMESTAMPS
 #ifdef _DEBUG_TIMESTAMPS
 #include "gstreamHelpers/myplugins/gstptsnormalise.h"
 #endif
@@ -29,10 +30,12 @@
 #include <boost/uuid/uuid_io.hpp>
 
 
-#define _USE_NMEA
+//#define _USE_NMEA
 //#define _USE_MDNS
 //#define _USE_PROBES
-#define _USE_BARRIER
+//#define _USE_BARRIER
+
+#define USE_RTSP
 
 #ifdef _USE_BARRIER
 #include "gstreamHelpers/myplugins/gstbarrier.h"
@@ -53,9 +56,9 @@ public:
         m_fatal(false),
 #ifdef _USE_NMEA        
         m_nmea(this),
-        padProber(this),
         m_dataFlowing(false),
 #endif        
+        padProber(this),
         m_browser(staticBrowse,this),
         m_sql("debian","dashcam","dashcam","dashcam")
     {
@@ -86,18 +89,36 @@ public:
 
 
         // mark up the records
+        // WIFI may cause video jitters
+
         //std::vector<std::string> urls={"rtsp://rpizerocam:8554/cam"};
+#ifdef USE_RTSP
         std::vector<std::string> urls={"rtsp://vpnhack:8554/cam"};
+#else
+        std::vector<std::string> urls={"rtmp://vpnhack/cam"};
+#endif        
         for(auto each=arecords.begin();each!=arecords.end();each++)
         {
             // rtsp://vpnhack:8554/cam
+#ifdef USE_RTSP
             std::string url("rtsp://");
+#else
+            std::string url("rtmp://");
+#endif            
             url+=*each;
+#ifdef USE_RTSP
             url+=":8554/cam";
+#else
+            url+=":1935/cam";
+#endif            
             urls.push_back(url);
         }
 
+#ifdef USE_RTSP
         m_sourceBins=new multiRemoteSourceBin<rtspSourceBin>(this,urls,"video/x-h264,stream-format=(string)avc,alignment=(string)au");
+#else
+        m_sourceBins=new multiRemoteSourceBin<rtmpSourceBin>(this,urls,"video/x-h264,stream-format=(string)avc");
+#endif
 
         m_fatal=buildPipeline();
     }
@@ -132,38 +153,40 @@ public:
  #ifdef _DEBUG_TIMESTAMPS
         ptsnormalise_registerRunTimePlugin();
         AddPlugin("ptsnormalise","ptsnormalise_subs");
-        ConnectPipeline(m_nmea,*m_sinkBin,"ptsnormalise_subs");
+        bool linked=ConnectPipeline(m_nmea,*m_sinkBin,"ptsnormalise_subs")==0;
  #else
   #ifdef _USE_BARRIER
-        bool linked=ConnectPipeline(m_nmea,*m_sinkBin,"barrier");
-        //   bool linked=gst_element_link_many(
-        //     FindNamedPlugin(m_nmea),
-        //     FindNamedPlugin("barrier"),
-        //     FindNamedPlugin(*m_sinkBin),
-        //     NULL
-        // );
-#else
-        ConnectPipeline(m_nmea,*m_sinkBin);
+        //bool linked=ConnectPipeline(m_nmea,*m_sinkBin,"barrier");
+          bool linked=gst_element_link_many(
+            FindNamedPlugin(m_nmea),
+            FindNamedPlugin("barrier"),
+            FindNamedPlugin(*m_sinkBin),
+            NULL
+        );
+  #else
+        bool linked=(ConnectPipeline(m_nmea,*m_sinkBin)==0);
   #endif
  #endif        
 
 
  #ifdef _DEBUG_TIMESTAMPS
         AddPlugin("ptsnormalise","ptsnormalise_video");
-        ConnectPipeline(*m_sourceBins,*m_sinkBin,"ptsnormalise_video");
+        linked=ConnectPipeline(*m_sourceBins,*m_sinkBin,"ptsnormalise_video")==0;
  #else
   #ifdef _USE_BARRIER
-        linked=ConnectPipeline(*m_sourceBins,*m_sinkBin,"barrier");
-        // linked=gst_element_link_many(
-        //     FindNamedPlugin(*m_sourceBins),
-        //     FindNamedPlugin("barrier"),
-        //     FindNamedPlugin(*m_sinkBin),
-        //     NULL
-        // );
+        //linked=ConnectPipeline(*m_sourceBins,*m_sinkBin,"barrier");
+        linked=gst_element_link_many(
+            FindNamedPlugin(*m_sourceBins),
+            FindNamedPlugin("barrier"),
+            FindNamedPlugin(*m_sinkBin),
+            NULL
+        );
   #else        
-        ConnectPipeline(*m_sourceBins,*m_sinkBin);
+        linked=(ConnectPipeline(*m_sourceBins,*m_sinkBin)==0);
   #endif
  #endif
+#else 
+        bool linked=(ConnectPipeline(*m_sourceBins,*m_sinkBin)==0);;
 #endif
 
         // now set up the pad block - the RTSP takes some time to start playing
@@ -176,6 +199,8 @@ public:
 
         return linked;
     }
+
+#ifdef _USE_NMEA    
 
     virtual GstPadProbeReturn blockProbe(GstPad * pad,GstPadProbeInfo * padinfo)
     {
@@ -208,21 +233,37 @@ public:
 
         m_dataFlowing=true;
     }
+#endif
 
     virtual void SplitMuxOpenedSplit(GstClockTime splitStart, const char*newFile)
     {
+        this->DumpGraph(newFile);
+        
+        // it's possible that this comes in before the 'close chapter' call,
+        // so don't change the guid until we know we're safe too
+        //while(!m_chapter_open.try_lock_for(std::chrono::milliseconds(10)))
+        while(m_chapter_open)
+        {
+            GST_WARNING_OBJECT (m_pipeline, "Failed to get 'm_chapter_open' mutex");
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+
         m_currentChapterGuid=boost::uuids::random_generator()();
+
+        m_chapter_open=true;
 
         m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(newFile,
                                                         m_journeyGuid,
                                                         m_currentChapterGuid,
                                                         (splitStart/GST_MSECOND)));
 
-
-        GST_ERROR_OBJECT (m_pipeline, "Opened split file - start %" GST_TIME_FORMAT " basetime %" GST_TIME_FORMAT "",
+        GST_INFO_OBJECT (m_pipeline, "Opened split file - chapter %s",boost::uuids::to_string(m_currentChapterGuid).c_str());
+        GST_INFO_OBJECT (m_pipeline, "Opened split file - start %" GST_TIME_FORMAT " basetime %" GST_TIME_FORMAT "",
             GST_TIME_ARGS(splitStart),
             GST_TIME_ARGS(m_basetime)
             );
+
+        printf("Opened split %s\r\n",newFile);
 
     }
 
@@ -232,9 +273,17 @@ public:
                                                         m_currentChapterGuid,
                                                         (splitEnd/GST_MSECOND)));
 
+        //m_chapter_open.unlock();
+        m_chapter_open=false;
 
-        GST_ERROR_OBJECT (m_pipeline, "Closed split file");
-        
+        GST_INFO_OBJECT (m_pipeline, "Closed split file - chapter %s",boost::uuids::to_string(m_currentChapterGuid).c_str());
+        GST_INFO_OBJECT (m_pipeline, "Closed split file - end %" GST_TIME_FORMAT " basetime %" GST_TIME_FORMAT "",
+            GST_TIME_ARGS(splitEnd),
+            GST_TIME_ARGS(m_basetime)
+            );
+
+        printf("Closed split %s\r\n",newFile);
+
     }
 
 
@@ -279,7 +328,7 @@ public:
         gstreamPipeline::elementMessageHandler(msg);
     }
 
-    void Run()
+    void Run(unsigned minutes=0)
     {
         // start a journey
         m_journeyGuid=boost::uuids::random_generator()();
@@ -287,7 +336,7 @@ public:
             sqlWorkJobs(sqlWorkJobs::taskType::swjStartJourney,m_journeyGuid));
 
         // run
-        gstreamPipeline::Run(60*3);
+        gstreamPipeline::Run(minutes*60);
 
         // close a journey
         m_scheduler.m_taskQueue.safe_push(
@@ -318,9 +367,16 @@ protected:
     bool m_browserDone, m_fatal;
     std::vector<std::string> arecords;
     
+#ifdef USE_RTSP
     multiRemoteSourceBin<rtspSourceBin> *m_sourceBins;
+#else
+    multiRemoteSourceBin<rtmpSourceBin> *m_sourceBins;
+#endif    
     gstSplitMuxOutBin *m_sinkBin;
     std::thread m_browser;
+    // TODO when i get to std-v20 implement this
+    // std::binary_semaphore m_chapter_open;
+    volatile bool m_chapter_open=false;
 
     std::string m_outspec;
 
@@ -345,8 +401,9 @@ int main()
 {
 
     gstreamPipeline thePipeline("mainPipeline");
+    // slice every 2 mins
     ringBufferPipeline ringPipeline("/vids",2);
-
+    ringPipeline.DumpGraph("before run");
     ringPipeline.Run();
 
 }

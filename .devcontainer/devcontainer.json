@@ -4,17 +4,24 @@
 	"name": "C++",
 	"build": {
 		"dockerfile": "Dockerfile",
-		"target": "gstreamer_dev"	// dev headers, no debug, quick to construct, poor debug
-		//"target": "gstreamer_debug" // gstreamer source, compiled, mariadbclient compiled, slooooow to construct, great debug
+		//"target": "gstreamer_dev"	// dev headers, no debug, quick to construct, poor debug
+		"target": "gstreamer_debug" // gstreamer source, compiled, mariadbclient compiled, slooooow to construct, great debug
 	},
-	"extensions": [
-						"mhutchie.git-graph",
-						"yzhang.markdown-all-in-one",
-						"tintinweb.graphviz-interactive-preview",
-						"gruntfuggly.todo-tree",
-						"github.vscode-github-actions",
-						"ms-vscode.makefile-tools"
-					],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"mhutchie.git-graph",
+				"yzhang.markdown-all-in-one",
+				"tintinweb.graphviz-interactive-preview",
+				"gruntfuggly.todo-tree",
+				"github.vscode-github-actions",
+				"ms-vscode.makefile-tools",
+				"github.vscode-github-actions",
+				"ms-vscode.cpptools-extension-pack"
+			],
+
+		}
+	},
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
@@ -31,6 +38,6 @@
 	"remoteUser": "root",
 
 	//"runArgs": ["--device=/dev/dri/card0","--device=/dev/dri/renderD128", "--network=host", "-v","/home/pi/source/bjf/dashcam/vids:/vids", "--cap-add=cap_net_admin"]
-	"runArgs": ["--network=host", "-v","${localWorkspaceFolder}/vids:/vids", "--cap-add=cap_net_admin"]
+	"runArgs": ["--network=host", "-v","${localWorkspaceFolder}/vids:/vids", "--cap-add=cap_net_admin", "-v","/dev/fb0:/dev/fb0"]
 
 }
