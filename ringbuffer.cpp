@@ -29,6 +29,9 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
+#include <signal.h>
+
+
 
 //#define _USE_NMEA
 //#define _USE_MDNS
@@ -81,7 +84,7 @@ public:
 
         m_outspec=outdir;
 
-        strftime(buffer,sizeof(buffer)-1,"/%F%H%MZ_%%05d.mp4",info);
+        strftime(buffer,sizeof(buffer)-1,"/%FT%TZ_%%05d.mp4",info);
         m_outspec+=buffer;
 
 
@@ -335,6 +338,14 @@ public:
         gstreamPipeline::elementMessageHandler(msg);
     }
 
+    void sliceNow()
+    {
+        if(m_sinkBin)
+        {
+            m_sinkBin->SendActionSignal("splitmuxsink","split-now");
+        }
+    }
+    
     void Run(unsigned minutes=0)
     {
         // start a journey
@@ -401,16 +412,31 @@ protected:
 };
 
 
+volatile bool ctrlCseen=false;
+
+void intHandler(int dummy) 
+{
+    printf("Handling ctrl-C\n\r");
+    ctrlCseen = true;
+}
 
 
+ringBufferPipeline ringPipeline("/vids",15);
+
+void sliceNow(int)
+{
+    ringPipeline.sliceNow();    
+}
 
 int main()
 {
+    signal(SIGINT, intHandler);
+    signal(SIGTERM, intHandler);
+    signal(SIGHUP, sliceNow);
 
-    gstreamPipeline thePipeline("mainPipeline");
-    // slice every 2 mins
-    ringBufferPipeline ringPipeline("/vids",2);
-    ringPipeline.DumpGraph("before run");
+    //gstreamPipeline thePipeline("mainPipeline");
+    // slice every 15 mins
+    ringPipeline.setExitVar(&ctrlCseen);
     ringPipeline.Run();
 
 }
