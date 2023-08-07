@@ -273,6 +273,13 @@ public:
                                                         m_currentChapterGuid,
                                                         (splitEnd/GST_MSECOND)));
 
+        // and add a prune job
+        // TODO use the proper time
+        time_t rawtime;
+        time(&rawtime);
+        GstClockTime gtime=(rawtime-3600)*GST_SECOND;
+        m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(gtime));
+
         //m_chapter_open.unlock();
         m_chapter_open=false;
 

@@ -21,12 +21,24 @@ int main()
 
     sqlWorkerThread<sqlWorkJobs> scheduler;
 
+    time_t rawtime;
+    time(&rawtime);
+
+    GstClockTime gtime=(rawtime-3600)*GST_SECOND;
+
+
+    scheduler.m_taskQueue.safe_push(sqlWorkJobs(gtime));
+
+    sleep(20);
+
+
+    
+
+
     scheduler.m_taskQueue.safe_push(sqlWorkJobs(sqlWorkJobs::taskType::swjStartJourney,testGuid));
 
     sleep(2);
 
-    time_t rawtime;
-    time(&rawtime);
 
     GstClockTime gtime=rawtime*GST_SECOND;
     //gtime+=(GST_SECOND/2);
@@ -49,6 +61,8 @@ int main()
     scheduler.m_taskQueue.safe_push(sqlWorkJobs(sqlWorkJobs::taskType::swjEndJourney,testGuid));
 
     sleep(1);
+
+
 
     scheduler.stop();
 

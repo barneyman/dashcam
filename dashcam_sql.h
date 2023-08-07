@@ -162,6 +162,28 @@ public:
 
 };
 
+class delete_chapter_params : public nullAccessor
+{
+public:
+
+    maria_guid m_journeyid, m_chapterid;
+
+    virtual void fillBind(size_t,MYSQL_BIND *bind, int *dir)
+    {
+        bind[0].buffer_type=MYSQL_TYPE_STRING;
+        bind[0].buffer=m_journeyid;
+        bind[0].buffer_length=m_journeyid.size();
+        dir[0]=SQL_PARAM_IN;
+
+        bind[1].buffer_type=MYSQL_TYPE_STRING;
+        bind[1].buffer=m_chapterid;
+        bind[1].buffer_length=m_chapterid.size();
+        dir[1]=SQL_PARAM_IN;        
+
+
+    }
+};
+
 class close_chapter_params : public nullAccessor
 {
 public:
@@ -193,5 +215,62 @@ public:
 
 };
 
+class chapterViewAccessor : public nullAccessor
+{
+public:
+
+    maria_guid m_journeyid, m_chapterid;
+    maria_timestamp m_cutoff;
+    maria_timestamp m_journeyStart, m_journeyEnd, m_chapterStart, m_chapterEnd;
+    char m_filename[1024];
+
+    virtual void fillBindRowset(size_t,MYSQL_BIND *bind, int *dir)
+    {
+
+        bind[0].buffer_type=MYSQL_TYPE_STRING;
+        bind[0].buffer=m_journeyid;
+        bind[0].buffer_length=m_journeyid.size();
+
+        bind[1].buffer_type=MYSQL_TYPE_STRING;
+        bind[1].buffer=m_chapterid;
+        bind[1].buffer_length=m_chapterid.size();
+
+        bind[2].buffer_type=MYSQL_TYPE_DATETIME;
+        bind[2].buffer=&m_journeyStart.m_now;
+        bind[2].buffer_length=sizeof(MYSQL_TYPE_DATETIME);
+
+        bind[3].buffer_type=MYSQL_TYPE_DATETIME;
+        bind[3].buffer=&m_journeyEnd.m_now;
+        bind[3].buffer_length=sizeof(MYSQL_TYPE_DATETIME);
+
+        bind[4].buffer_type=MYSQL_TYPE_DATETIME;
+        bind[4].buffer=&m_chapterStart.m_now;
+        bind[4].buffer_length=sizeof(MYSQL_TYPE_DATETIME);
+
+        bind[5].buffer_type=MYSQL_TYPE_DATETIME;
+        bind[5].buffer=&m_chapterEnd.m_now;
+        bind[5].buffer_length=sizeof(MYSQL_TYPE_DATETIME);
+
+        bind[6].buffer_type=MYSQL_TYPE_STRING;
+        bind[6].buffer=&m_filename;
+        bind[6].buffer_length=sizeof(m_filename)-1;
+    }
+
+
+};
+
+
+class expire_journeys_params : public chapterViewAccessor
+{
+public:
+
+    virtual void fillBind(size_t,MYSQL_BIND *bind, int *dir)
+    {
+        bind[0].buffer_type=MYSQL_TYPE_DATETIME;
+        bind[0].buffer=&m_cutoff.m_now;
+        bind[0].buffer_length=sizeof(MYSQL_TYPE_DATETIME);
+        dir[0]=SQL_PARAM_IN;
+    }
+};
 
 #endif

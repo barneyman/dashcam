@@ -142,7 +142,7 @@ public:
                 }
 
                 for(status=mysql_stmt_fetch(m_statement);
-                    status == 1 || status == MYSQL_NO_DATA;
+                    status==0;
                     status=mysql_stmt_fetch(m_statement))
                 {
                     readRowset(m_conn->status());

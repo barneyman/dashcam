@@ -3,11 +3,6 @@
 #include <queue>
 #include <chrono>
 
-class task
-{
-public:
-    virtual void run(){};
-};
 
 template <class item>
 class lockableQueue 
@@ -34,7 +29,7 @@ public:
         m_queue.push(theItem);
     }
 
-    bool available()
+    bool pending_jobs()
     {
         std::lock_guard<std::mutex> guard(m_lock);
         bool ret=m_queue.size()>0;
@@ -83,14 +78,17 @@ public:
         m_taskRunning=true;
         m_taskStop=false;
 
-        while(!m_taskStop)
+        while(!m_taskStop || (m_taskStop && m_taskQueue.pending_jobs()))
         {
-            if(m_taskQueue.available())
+            if(m_taskQueue.pending_jobs())
             {
                 item popped=m_taskQueue.safe_pop();
                 runtask(popped);
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            else
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            }
         }
 
         m_taskRunning=false;
@@ -131,6 +129,13 @@ public:
     }
 
 };
+
+class task
+{
+public:
+    virtual void run(){};
+};
+
 
 class sqlWorkJobs : public task
 {
@@ -201,6 +206,15 @@ public:
 
     }
 
+    sqlWorkJobs(GstClockTime basetime):
+    m_tasktype(swjExpireJourneys),
+    m_sql(NULL),
+    m_basetime(basetime)
+    {
+
+    }       
+
+
 
 /////////////////////////////////////////////////////
 
@@ -229,6 +243,7 @@ public:
                 endJourney();
                 break;
             case swjExpireJourneys:
+                expireJourneys();
                 break;
             default:
                 break;
@@ -332,5 +347,61 @@ protected:
         }           
     }
 
+    void expireJourneys()
+    {
+        mariaBinding<expire_journeys_params,7> expireParams;
+        expireParams.m_cutoff=maria_timestamp(m_basetime);
+        mySQLprepared<expire_journeys_params,7> callExpireJourneys(m_sql,"CALL sp_list_old_chapters(?)");
+
+        std::vector<std::pair<std::string, std::pair<maria_guid,maria_guid>>> killthemall;
+
+        //mariaBinding<chapter_view_cols,7> expiredChapters;
+        if(callExpireJourneys.bind(expireParams))
+        {
+
+            if(callExpireJourneys.execAndFetch(expireParams,[&](int flags)
+                {
+                    //printf("%s\n\r",expireParams.m_filename);
+                    killthemall.push_back(std::pair<std::string, std::pair<maria_guid,maria_guid>>(   expireParams.m_filename,
+                                                                                                      std::pair<maria_guid,maria_guid>(expireParams.m_journeyid,expireParams.m_chapterid)));
+                }))
+            {
+                mariaBinding<delete_chapter_params,2> deleteParams;
+
+                for(auto iter=killthemall.begin();iter!=killthemall.end();iter++)
+                {
+                    // remove the file
+                    printf("unlinking %s\n\r",iter->first.c_str());
+                    unlink(iter->first.c_str());
+                    // update the db
+                    deleteParams.m_journeyid=iter->second.first;
+                    deleteParams.m_chapterid=iter->second.second;
+                    mySQLprepared<delete_chapter_params,2> callExpireJourneys(m_sql,"CALL sp_delete_chapter(?,?)");
+
+                    if(callExpireJourneys.bind(deleteParams))
+                    {
+                        if(!callExpireJourneys.exec())
+                        {
+                            printf("SQL error: %s\r\n",m_sql->error());
+                        }
+                    }
+                    else
+                    {
+                        printf("SQL error: %s\r\n",m_sql->error());
+                    }           
+
+                }
+            }
+            else
+            {
+                printf("SQL error: %s\r\n",m_sql->error());
+            }           
+        }
+        else
+        {
+            printf("SQL error: %s\r\n",m_sql->error());
+        }           
+
+    }
 
 };
