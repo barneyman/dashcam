@@ -40,8 +40,6 @@ int main()
     sleep(2);
 
 
-    GstClockTime gtime=rawtime*GST_SECOND;
-    //gtime+=(GST_SECOND/2);
     scheduler.m_taskQueue.safe_push(sqlWorkJobs(testGuid,gtime));
 
 
