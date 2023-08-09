@@ -59,7 +59,7 @@ jobs:
       - name: amd build
         if: matrix.arch == 'amd64'
         run: |
-          sudo apt update && apt upgrade -y
+          sudo apt update && sudo apt upgrade -y
           sudo apt install -y libboost-all-dev
           sudo apt install -y gstreamer1.0-plugins-base \
             gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
@@ -74,7 +74,7 @@ jobs:
           sudo apt install -y libmariadb-dev
           sudo apt install -y build-essential
           sudo apt install -y cmake
-          
+
           make github ARCH=${{ matrix.arch }}
    
         shell: bash
