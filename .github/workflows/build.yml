@@ -51,7 +51,7 @@ jobs:
             apt install -y libgstrtspserver-1.0-dev
             apt install -y libmariadb-dev
             apt install -y build-essential
-            apt install -y cmake
+            apt install -y cmake fakeroot
 
           run: |
               make github ARCH=${{ matrix.arch }}
@@ -73,7 +73,7 @@ jobs:
           sudo apt install -y libgstrtspserver-1.0-dev
           sudo apt install -y libmariadb-dev
           sudo apt install -y build-essential
-          sudo apt install -y cmake
+          sudo apt install -y cmake fakeroot
 
           make github ARCH=${{ matrix.arch }}
    
