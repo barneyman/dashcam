@@ -12,7 +12,7 @@ GST_CONFIG = `pkg-config --cflags --libs gstreamer-1.0 gstreamer-base-1.0 gstrea
 MYSQLCONFIG = `pkg-config --cflags --libs libmariadb`
 
 all: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) caps joiner test_sql
-github: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) ringbuffer joiner test_sql
+github: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) ringbuffer joiner package_server
 
 # internal libs
 GSTHELPERESINCLUDE = gstreamHelpers
@@ -68,8 +68,10 @@ package_all: package_server
 package_server:
 	- mkdir .debpkg-server/usr/
 	- mkdir .debpkg-server/usr/bin
+	sed -i 's/Architecture:.*/Architecture: $(ARCH)/' .debpkg-server/DEBIAN/control
+	sed -i 's/Package:.*/Package: dashcam-server-$(ARCH)/' .debpkg-server/DEBIAN/control
 	cp ringbuffer .debpkg-server/usr/bin/
 	cp joiner .debpkg-server/usr/bin/
 	fakeroot dpkg-deb --build .debpkg-server
-	mv .debpkg-server.deb dashcam-server.deb
+	mv .debpkg-server.deb dashcam-server_$(ARCH).deb
 
