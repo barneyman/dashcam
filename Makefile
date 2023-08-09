@@ -43,16 +43,16 @@ $(MDNS_CPP_LIB):
 
 
 ringbuffer: ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h)
-	g++ -g -o $@$(ARCH) ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
+	g++ -g -o $@_$(ARCH) ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
 
 joiner: joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h) $(wildcard ./*.h)
-	g++ -g -o $@$(ARCH) joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
+	g++ -g -o $@_$(ARCH) joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
 
 test_sql: test_sql.cpp $(wildcard ./*.h)
-	g++ -g -o $@$(ARCH) test_sql.cpp $(MYSQLCONFIG) $(GST_CONFIG)
+	g++ -g -o $@_$(ARCH) test_sql.cpp $(MYSQLCONFIG) $(GST_CONFIG)
 
 test_nobins: test_nobins.cpp $(wildcard ./*.h) $(GSTHELPERLIB)
-	g++ -g -o $@$(ARCH) test_nobins.cpp $(GST_CONFIG) $(GSTHELPERLIB)
+	g++ -g -o $@_$(ARCH) test_nobins.cpp $(GST_CONFIG) $(GSTHELPERLIB)
 
 
 caps: ringbuffer
@@ -70,8 +70,8 @@ package_server:
 	- mkdir .debpkg-server/usr/bin
 	sed -i 's/Architecture:.*/Architecture: $(ARCH)/' .debpkg-server/DEBIAN/control
 	sed -i 's/Package:.*/Package: dashcam-server-$(ARCH)/' .debpkg-server/DEBIAN/control
-	cp ringbuffer .debpkg-server/usr/bin/
-	cp joiner .debpkg-server/usr/bin/
+	cp ringbuffer_$(ARCH) .debpkg-server/usr/bin/
+	cp joiner_$(ARCH) .debpkg-server/usr/bin/
 	fakeroot dpkg-deb --build .debpkg-server
 	mv .debpkg-server.deb dashcam-server_$(ARCH).deb
 
