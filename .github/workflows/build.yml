@@ -19,6 +19,7 @@ jobs:
             distro: bullseye
           - arch: armv7
             distro: bullseye
+          - arch: amd64
 
     steps:
       - name: checkout
@@ -26,7 +27,8 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: tools
+      - name: arm builds
+        if: matrix.arch != 'amd64'
         uses: uraimo/run-on-arch-action@v2
         with:
           arch: ${{ matrix.arch }}
@@ -53,14 +55,34 @@ jobs:
 
           run: |
               make github ARCH=${{ matrix.arch }}
-      - name: zip
+
+      - name: amd build
+        if: matrix.arch == 'amd64'
         run: |
-          tar -czvf ${{ matrix.arch }}.tar.gz *${{ matrix.arch }}
+          apt update && apt upgrade -y
+          apt install -y libboost-all-dev
+          apt install -y gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
+            gstreamer1.0-plugins-ugly gstreamer1.0-libav \
+            gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa \
+            gstreamer1.0-gl  
+          apt install -y libpango1.0-dev
+          apt install -y libavfilter-dev
+          apt install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+            libgstreamer-plugins-bad1.0-dev 
+          apt install -y libgstrtspserver-1.0-dev
+          apt install -y libmariadb-dev
+          apt install -y build-essential
+          apt install -y cmake
+          make github ARCH=${{ matrix.arch }}
+   
+        shell: bash
+
       - name: artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.arch }}
-          path: ${{ matrix.arch }}.tar.gz
+          path: ./*${{ matrix.arch }}
          
 
       # - name: gstreamer
