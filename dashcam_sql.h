@@ -223,6 +223,7 @@ public:
     maria_timestamp m_cutoff;
     maria_timestamp m_journeyStart, m_journeyEnd, m_chapterStart, m_chapterEnd;
     char m_filename[1024];
+    //unsigned char m_locked;
 
     virtual void fillBindRowset(size_t,MYSQL_BIND *bind, int *dir)
     {
@@ -254,6 +255,11 @@ public:
         bind[6].buffer_type=MYSQL_TYPE_STRING;
         bind[6].buffer=&m_filename;
         bind[6].buffer_length=sizeof(m_filename)-1;
+
+        // bind[7].buffer_type=MYSQL_TYPE_TINY;
+        // bind[7].buffer=&m_locked;
+        // bind[7].buffer_length=sizeof(m_locked);
+
     }
 
 
