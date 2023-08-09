@@ -82,8 +82,10 @@ jobs:
       - name: artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.arch }}
-          path: ./*${{ matrix.arch }}
+          name: ${{ matrix.arch }}.deb
+          path: |
+            ./*${{ matrix.arch }}.deb
+
          
 
       # - name: gstreamer
