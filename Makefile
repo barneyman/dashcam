@@ -6,16 +6,18 @@ ARCH=amd64
 
 # pck-config options
 # RTSP_SERVER
-GST_RTSP_SRV_CONFIG = `pkg-config --cflags --libs gstreamer-rtsp-server-1.0 gstreamer-1.0`
+# GST_RTSP_SRV_CONFIG = `pkg-config --cflags --libs gstreamer-rtsp-server-1.0 gstreamer-1.0`
+
 GST_CONFIG = `pkg-config --cflags --libs gstreamer-1.0 gstreamer-base-1.0 gstreamer-net-1.0`
-# when installed vua apt
+# when installed via apt
 #MYSQLCONFIG = `pkg-config --cflags --libs mariadb`
 # when built
+
 MYSQLCONFIG = `pkg-config --cflags --libs libmariadb`
 GPSD_CONFIG = `pkg-config --cflags --libs libgps`
 
 all: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) caps joiner test_sql
-github: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) ringbuffer joiner package_server
+github: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) ringbuffer joiner package_apps
 
 # internal libs
 GSTHELPERESINCLUDE = gstreamHelpers
@@ -46,37 +48,37 @@ $(MDNS_CPP_LIB):
 
 
 ringbuffer: ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h)
-	g++ -g -o $@_$(ARCH) ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) $(GPSD_CONFIG) -I $(MDNS_CPP_INC) 
+	g++ -g -o $@-$(ARCH) ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) $(GPSD_CONFIG) -I $(MDNS_CPP_INC) 
 
 joiner: joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h) $(wildcard ./*.h)
-	g++ -g -o $@_$(ARCH) joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
+	g++ -g -o $@-$(ARCH) joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
 
 test_sql: test_sql.cpp $(wildcard ./*.h)
-	g++ -g -o $@_$(ARCH) test_sql.cpp $(MYSQLCONFIG) $(GST_CONFIG)
+	g++ -g -o $@-$(ARCH) test_sql.cpp $(MYSQLCONFIG) $(GST_CONFIG)
 
 test_nobins: test_nobins.cpp $(wildcard ./*.h) $(GSTHELPERLIB) $(wildcard $(HELPERBINS)/*.h)
-	g++ -g -o $@_$(ARCH) test_nobins.cpp $(GST_CONFIG) $(GSTHELPERLIB) $(MYPLUGINSLIB)
+	g++ -g -o $@-$(ARCH) test_nobins.cpp $(GST_CONFIG) $(GSTHELPERLIB) $(MYPLUGINSLIB)
 
 test_gpsd: test_gpsd.cpp 
-	g++ -g -o $@_$(ARCH) test_gpsd.cpp $(GPSD_CONFIG)
+	g++ -g -o $@-$(ARCH) test_gpsd.cpp $(GPSD_CONFIG)
 
 caps: ringbuffer
-	sudo setcap cap_net_admin=eip ./ringbuffer_$(ARCH)
+	sudo setcap cap_net_admin=eip ./ringbuffer-$(ARCH)
 
 # preceeding - means 'let it fail'
 clean:
 	-rm ./dots/*
 #	-rm ./vids/out.mp4
 
-package_all: package_server
+package_all: package_apps
 
-package_server:
+package_apps:
 	- mkdir .debpkg-server/usr/
 	- mkdir .debpkg-server/usr/bin
 	sed -i 's/Architecture:.*/Architecture: $(ARCH)/' .debpkg-server/DEBIAN/control
 	sed -i 's/Package:.*/Package: dashcam-server-$(ARCH)/' .debpkg-server/DEBIAN/control
-	cp ringbuffer_$(ARCH) .debpkg-server/usr/bin/
-	cp joiner_$(ARCH) .debpkg-server/usr/bin/
+	cp ringbuffer-$(ARCH) .debpkg-server/usr/bin/
+	cp joiner-$(ARCH) .debpkg-server/usr/bin/
 	fakeroot dpkg-deb --build .debpkg-server
-	mv .debpkg-server.deb dashcam-server_$(ARCH).deb
+	mv .debpkg-server.deb ./ringbuffer-$(ARCH).deb
 

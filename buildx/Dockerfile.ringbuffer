@@ -1,0 +1,16 @@
+FROM debian:bullseye-slim
+
+RUN apt update && apt upgrade -y
+
+ARG TARGETARCH
+ARG TARGETVARIANT
+ARG STARTAPP
+
+WORKDIR /app
+COPY $STARTAPP-$TARGETARCH$TARGETVARIANT.deb .
+
+RUN apt install ./$STARTAPP-$TARGETARCH$TARGETVARIANT.deb -y
+
+VOLUME /vids
+
+CMD ["$STARTAPP"]

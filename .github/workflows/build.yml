@@ -86,7 +86,34 @@ jobs:
           path: |
             ./*${{ matrix.arch }}.deb
 
-         
+  docker:
+    runs-on: ubuntu-20.04
+    needs: compile
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: fetch
+        uses: actions/download-artifact@v3
+        with:
+          path: ./
+
+      - name: get-buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          version: latest
+
+      - name: build the image
+        run: |
+          docker buildx build \
+            --tag barneyman/ringbuffer:latest \
+            --platform linux/amd64,linux/arm/v7,linux/arm64 \
+            --build-arg STARTAPP=ringbuffer
+            -f buildx/Dockerfile.ringbuffer .
+
+
+
 
       # - name: gstreamer
       #   run: |

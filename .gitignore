@@ -8,4 +8,4 @@ runserver.sh
 rtsp-srv
 joiner
 **/*.deb
-*_amd64
+*-amd64
