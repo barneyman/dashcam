@@ -82,7 +82,7 @@ jobs:
       - name: artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.arch }}.deb
+          name: ${{ matrix.arch }}.deb.zip
           path: |
             ./*${{ matrix.arch }}.deb
 
@@ -111,11 +111,11 @@ jobs:
         
       - name: unzip
         run: |
-          ls
+          ls -alh
           for i in $( ls *.deb ); do mv $i $i.zip; done
-          ls
+          ls -alh
           unzip *.zip
-          ls
+          ls -alh
         shell: bash
 
       - name: Login to GitHub Container Registry
