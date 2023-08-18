@@ -189,7 +189,7 @@ public:
   #endif
  #endif
 #else 
-        bool linked=(ConnectPipeline(*m_sourceBins,*m_sinkBin)==0);;
+        bool linked=(ConnectPipeline(*m_sourceBins,*m_sinkBin)==0);
 #endif
 
         // now set up the pad block - the RTSP takes some time to start playing
@@ -240,15 +240,14 @@ public:
 
     virtual void SplitMuxOpenedSplit(GstClockTime splitStart, const char*newFile)
     {
-        this->DumpGraph(newFile);
+        //this->DumpGraph(boost::uuids::to_string(m_currentChapterGuid).c_str());
         
         // it's possible that this comes in before the 'close chapter' call,
         // so don't change the guid until we know we're safe too
-        //while(!m_chapter_open.try_lock_for(std::chrono::milliseconds(10)))
         while(m_chapter_open)
         {
             GST_WARNING_OBJECT (m_pipeline, "Failed to get 'm_chapter_open' mutex");
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
 
         m_currentChapterGuid=boost::uuids::random_generator()();
@@ -360,19 +359,17 @@ public:
         m_scheduler.m_taskQueue.safe_push(
             sqlWorkJobs(sqlWorkJobs::taskType::swjEndJourney,m_journeyGuid));
 
-        // TODO fix this
-        sleep(2);
-
         m_scheduler.stop();
 
     }
 
     // from pipeline
-    virtual void pipelineStateChangeMessageHandler(GstMessage*msg)
+    virtual void pipelineStateChangeMessageHandler(GstMessage*msg, GstState old_state,GstState new_state, GstState pendingState)
     {
-        GstState oldState, newState;
-        gst_message_parse_state_changed(msg, &oldState, &newState, NULL);
-        if(newState==GST_STATE_PLAYING)
+        // must call down
+        gstreamPipeline::pipelineStateChangeMessageHandler(msg,old_state,new_state,pendingState);
+
+        if(new_state==GST_STATE_PLAYING)
         {
             m_basetime=gstreamPipeline::GetTimeSinceEpoch();
             m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(m_journeyGuid,m_basetime));
