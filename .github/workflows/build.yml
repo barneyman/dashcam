@@ -112,7 +112,7 @@ jobs:
       - name: unzip
         run: |
           ls
-          mv *.deb *.deb.zip
+          for i in $( ls *.deb ); do mv $i $i.zip; done
           ls
           unzip *.zip
           ls
