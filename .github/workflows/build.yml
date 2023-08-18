@@ -111,7 +111,7 @@ jobs:
             --platform linux/amd64,linux/arm/v7,linux/arm64 \
             --build-arg STARTAPP=ringbuffer
             -f buildx/Dockerfile.ringbuffer .
-
+        shell: bash
 
 
 
