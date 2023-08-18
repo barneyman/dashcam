@@ -4,8 +4,8 @@
 	"name": "C++",
 	"build": {
 		"dockerfile": "Dockerfile",
-		//"target": "gstreamer_dev"	// dev headers, no debug, quick to construct, poor debug
-		"target": "gstreamer_debug" // gstreamer source, compiled, mariadbclient compiled, slooooow to construct, great debug
+		"target": "gstreamer_dev"	// dev headers, no debug, quick to construct, poor debug
+		//"target": "gstreamer_debug" // gstreamer source, compiled, mariadbclient compiled, slooooow to construct, great debug
 	},
 	"customizations": {
 		"vscode": {
@@ -17,7 +17,8 @@
 				"github.vscode-github-actions",
 				"ms-vscode.makefile-tools",
 				"github.vscode-github-actions",
-				"ms-vscode.cpptools-extension-pack"
+				"ms-vscode.cpptools-extension-pack",
+				"me-dutour-mathieu.vscode-github-actions"
 			],
 
 		}

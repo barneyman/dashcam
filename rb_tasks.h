@@ -371,7 +371,6 @@ protected:
                 for(auto iter=killthemall.begin();iter!=killthemall.end();iter++)
                 {
                     // remove the file
-                    printf("unlinking %s\n\r",iter->first.c_str());
                     unlink(iter->first.c_str());
                     // update the db
                     deleteParams.m_journeyid=iter->second.first;
