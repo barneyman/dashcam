@@ -112,6 +112,8 @@ jobs:
       - name: unzip
         run: |
           ls
+          mv *.deb *.deb.zip
+          ls
           unzip *.zip
           ls
         shell: bash
