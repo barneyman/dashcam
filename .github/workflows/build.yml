@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: checkout
-        uses: actions/checkout@v2.7.0
+        uses: actions/checkout@v3
         with:
           submodules: 'recursive'
 
@@ -49,7 +49,7 @@ jobs:
             apt install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
               libgstreamer-plugins-bad1.0-dev 
             apt install -y libgstrtspserver-1.0-dev
-            apt install -y libmariadb-dev
+            apt install -y libmariadb-dev libgps-dev
             apt install -y build-essential
             apt install -y cmake fakeroot
 

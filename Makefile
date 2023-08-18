@@ -10,6 +10,7 @@ GST_CONFIG = `pkg-config --cflags --libs gstreamer-1.0 gstreamer-base-1.0 gstrea
 #MYSQLCONFIG = `pkg-config --cflags --libs mariadb`
 # when built
 MYSQLCONFIG = `pkg-config --cflags --libs libmariadb`
+GPSD_CONFIG = `pkg-config --cflags --libs libgps`
 
 all: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) caps joiner test_sql
 github: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) ringbuffer joiner package_server
@@ -49,11 +50,13 @@ joiner: joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(
 	g++ -g -o $@_$(ARCH) joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
 
 test_sql: test_sql.cpp $(wildcard ./*.h)
-	g++ -g -o $@_$(ARCH) test_sql.cpp $(MYSQLCONFIG) $(GST_CONFIG)
+	g++ -g -o $@ test_sql.cpp $(MYSQLCONFIG) $(GST_CONFIG)
 
-test_nobins: test_nobins.cpp $(wildcard ./*.h) $(GSTHELPERLIB)
-	g++ -g -o $@_$(ARCH) test_nobins.cpp $(GST_CONFIG) $(GSTHELPERLIB)
+test_nobins: test_nobins.cpp $(wildcard ./*.h) $(GSTHELPERLIB) $(wildcard $(HELPERBINS)/*.h)
+	g++ -g -o $@ test_nobins.cpp $(GST_CONFIG) $(GSTHELPERLIB) $(MYPLUGINSLIB)
 
+test_gpsd: test_gpsd.cpp 
+	g++ -g -o $@ test_gpsd.cpp $(GPSD_CONFIG)
 
 caps: ringbuffer
 	sudo setcap cap_net_admin=eip ./ringbuffer

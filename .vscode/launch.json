@@ -28,12 +28,35 @@
                 }
             ],"preLaunchTask":"${defaultBuildTask}"
         },
-
+        {
+            "name": "(gdb) test_nobins",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/test_nobins",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],"preLaunchTask":"${defaultBuildTask}"
+        },
         {
             "name": "(gdb) Launch ringbuffer",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/ringbuffer",
+            "program": "${workspaceFolder}/ringbuffer_",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
@@ -87,16 +110,43 @@
             ],"preLaunchTask":"${defaultBuildTask}"
         },
 
-
+        {
+            "name": "(gdb) Launch test_gpsd",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/test_gpsd",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [    {"name":"GST_DEBUG", "value":"4"},//,nmeasource:3,basesrc:3,ptsnormalise:5,split*:5,rtsp*:5"},
+                                // {"name":"GST_DEBUG","value":"GST_TRACER:7"},
+                                // {"name": "GST_TRACERS", "value": "leaks(stack-traces-flags=full)"},
+                                {"name": "GST_DEBUG_FILE", "value": "/workspaces/dashcam/test_nobins.log"},
+                                {"name":"GST_DEBUG_DUMP_DOT_DIR","value": "/workspaces/dashcam/dots"}],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],"preLaunchTask":"${defaultBuildTask}"
+        },
         {
             "name": "(gdb) Launch join",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/joiner",
+            "program": "${workspaceFolder}/joiner_",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
-            "environment": [    {"name":"GST_DEBUG", "value":"3,ptsnormalise:5,split*:5"},//,nmeasource:3,basesrc:3,default:4"},
+            "environment": [    {"name":"GST_DEBUG", "value":"3,ptsnormalise:4,split*:4"},//,nmeasource:3,basesrc:3,default:4"},
                                 {"name":"GST_DEBUG_FILE", "value":"/workspaces/dashcam/joiner.log"},
                                 // {"name":"GST_DEBUG","value":"GST_TRACER:7"},
                                 // {"name": "GST_TRACERS", "value": "leaks(stack-traces-flags=full)"},

@@ -149,7 +149,8 @@ RUN apt install -y gstreamer1.0-vaapi
 # sql dev
 RUN apt install -y libmariadb-dev
 
-
+# gpsd dev
+RUN apt install -y libgps-dev
 
 #####################
 
