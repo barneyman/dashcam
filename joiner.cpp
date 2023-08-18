@@ -29,7 +29,7 @@ public:
         m_src(this,files[0].c_str()),
 #endif        
 #ifdef _USE_PANGO
-        m_meta(this),
+        m_meta(this, _PANGO_SPEED | _PANGO_LONGLAG | _PANGO_UTC),
 #endif        
         m_out(this,destination)
 

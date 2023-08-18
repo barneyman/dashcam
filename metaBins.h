@@ -1,6 +1,10 @@
 #include "gstreamHelpers/helperBins/myJsonBins.h"
 #include "gstreamHelpers/myplugins/gstnmeasource.h"
 
+const char *sub_error="Subtitle Error";
+const char *span="<span foreground='white' size='small'>";
+const char *span_end="</span>";
+
 // turns an nmea json into speed pango
 class gstJsonNMEAtoSpeed : public gstJsonToPangoBin
 {
@@ -17,15 +21,23 @@ public:
         if(jsondata.contains("speedKMH") && jsondata.contains("bearingDeg") && jsondata.contains("satelliteCount"))
         {
 
-            len=snprintf(msg, sizeof(msg), "<span foreground=\"white\" size=\"small\">%d km/h %.1f° %2d sats</span>",
+            len=snprintf(msg, sizeof(msg), "%s%d km/h %.1f° %2d sats%s",
+                span,
                 jsondata["speedKMH"].get<int>(),
                 jsondata["bearingDeg"].get<float>(),
-                jsondata["satelliteCount"].get<int>());
+                jsondata["satelliteCount"].get<int>(),
+                span_end);
 
             return msg;  
         }
 
-        return "Subtitle Error";
+        len=snprintf(msg, sizeof(msg), "%s%s%s",
+            span,
+            sub_error,
+            span_end
+            );
+
+        return msg;  
     }
 };
 
@@ -43,12 +55,12 @@ public:
         char msg[PANGO_BUFFER];
         int len=0;
 
-        len=snprintf(msg, sizeof(msg), "<span foreground=\"white\" size=\"small\">DTS %" GST_TIME_FORMAT " PTS %" GST_TIME_FORMAT " Dur %" GST_TIME_FORMAT "</span>",
-        //len=snprintf(msg, sizeof(msg), "<span foreground=\"white\" size=\"small\">Frame %lu DTS %" GST_TIME_FORMAT " PTS %" GST_TIME_FORMAT " Dur %" GST_TIME_FORMAT "</span>",
-        //    inbuf->offset,
+        len=snprintf(msg, sizeof(msg), "%sDTS %" GST_TIME_FORMAT " PTS %" GST_TIME_FORMAT " Dur %" GST_TIME_FORMAT "%s",
+            span,
             GST_TIME_ARGS(inbuf->dts),
             GST_TIME_ARGS(inbuf->pts),
-            GST_TIME_ARGS(inbuf->duration)
+            GST_TIME_ARGS(inbuf->duration),
+            span_end
             );
 
         return msg;  
@@ -73,15 +85,23 @@ public:
         if(jsondata.contains("longitudeE") && jsondata.contains("latitudeN"))
         {
 
-            len=snprintf(msg, sizeof(msg), "<span foreground=\"white\" size=\"small\">Long:%.4f Lat:%.4f</span>",
+            len=snprintf(msg, sizeof(msg), "%sLong:%.4f Lat:%.4f%s",
+                span,
                 jsondata["longitudeE"].get<float>(),
-                jsondata["latitudeN"].get<float>()
+                jsondata["latitudeN"].get<float>(),
+                span_end
                 );
 
             return msg;  
         }
 
-        return "Subtitle Error";
+        len=snprintf(msg, sizeof(msg), "%s%s%s",
+            span,
+            sub_error,
+            span_end
+            );
+
+        return msg;  
     }
 };
 
@@ -132,11 +152,13 @@ public:
         }
         else
         {
-            output="Subtitle error";
+            output=sub_error;
         }
 
-        len=snprintf(msg, sizeof(msg), "<span foreground=\"white\" size=\"small\">%s</span>",
-            output.c_str()
+        len=snprintf(msg, sizeof(msg), "%s%s%s",
+            span,
+            output.c_str(),
+            span_end
             );
 
         return msg;
