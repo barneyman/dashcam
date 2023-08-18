@@ -107,6 +107,7 @@ jobs:
           workflow: build.yml
           path: .
           run_number: 27  
+          workflow_conclusion: failure
         
       - name: unzip
         run: |
