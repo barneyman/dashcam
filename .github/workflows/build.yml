@@ -82,7 +82,7 @@ jobs:
       - name: artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.arch }}.deb.zip
+          name: ${{ matrix.arch }}.deb
           path: |
             ./*${{ matrix.arch }}.deb
 
@@ -112,7 +112,7 @@ jobs:
       - name: unzip
         run: |
           ls -alh
-          for i in $( ls *.deb ); do mv $i $i.zip; done
+          for i in $( ls *.deb ); do ls $i; done
           ls -alh
           unzip *.zip
           ls -alh
