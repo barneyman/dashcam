@@ -9,7 +9,7 @@ on:
 env:
   # give this a run number to avoid a lengthy build
   # ie when just testing the docker/downstream stuff
-  fetchassets: ''
+  fetchassets: '37'
 
 jobs:
   compile:
@@ -21,6 +21,7 @@ jobs:
     strategy:
       matrix:
         include:
+          # aarch64 is 64bit, armv7 is 32 bit. 
           - arch: aarch64
             distro: bullseye
             dockerarch: arm64
@@ -63,7 +64,7 @@ jobs:
             apt install -y cmake fakeroot
 
           run: |
-              make github ARCH=${{ matrix.dockerarch }}
+              make github ARCH=${{ matrix.dockerarch }} DEBARCH=${{ matrix.arch }}
 
       - name: amd build
         if: matrix.arch == 'amd64' && env.fetchassets==''
@@ -89,6 +90,7 @@ jobs:
         shell: bash
 
       - name: artifact
+        if: env.fetchassets==''
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.dockerarch }}.deb
@@ -140,7 +142,7 @@ jobs:
           file: buildx/Dockerfile.ringbuffer
           cache-from: type=gha
           cache-to: type=gha
-          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          platforms: linux/arm/v7,linux/arm64,linux/amd64
           push: true
           tags: ghcr.io/barneyman/ringbuffer
           labels: latest

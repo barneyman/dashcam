@@ -1,9 +1,11 @@
 FROM debian:bullseye-slim
 
-RUN apt update && apt upgrade -y
-
 ARG TARGETARCH
 ARG TARGETVARIANT
+
+RUN dpkg --add-architecture $TARGETARCH$TARGETVARIANT && \
+    apt update && apt upgrade -y
+
 ARG STARTAPP
 
 WORKDIR /app
