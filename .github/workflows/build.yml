@@ -99,6 +99,9 @@ jobs:
 
   docker:
     runs-on: ubuntu-20.04
+    permissions:
+      # or the push fails
+      packages: write
     needs: compile
     steps:
       - uses: actions/checkout@v3
