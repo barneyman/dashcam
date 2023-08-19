@@ -6,8 +6,14 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+env:
+  # give this a run number to avoid a lengthy build
+  # ie when just testing the docker/downstream stuff
+  fetchassets: ''
+
 jobs:
   compile:
+
     runs-on: ubuntu-20.04
     permissions:
       packages: write
@@ -15,11 +21,14 @@ jobs:
     strategy:
       matrix:
         include:
-          # - arch: aarch64
-          #   distro: bullseye
-          # - arch: armv7
-          #   distro: bullseye
+          - arch: aarch64
+            distro: bullseye
+            dockerarch: arm64
+          - arch: armv7
+            distro: bullseye
+            dockerarch: armv7l
           - arch: amd64
+            dockerarch: amd64
 
     steps:
       - name: checkout
@@ -54,7 +63,7 @@ jobs:
             apt install -y cmake fakeroot
 
           run: |
-              make github ARCH=${{ matrix.arch }}
+              make github ARCH=${{ matrix.dockerarch }}
 
       - name: amd build
         if: matrix.arch == 'amd64'
@@ -75,16 +84,16 @@ jobs:
           sudo apt install -y build-essential
           sudo apt install -y cmake fakeroot
 
-          make github ARCH=${{ matrix.arch }}
+          make github ARCH=${{ matrix.dockerarch }}
    
         shell: bash
 
       - name: artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.arch }}.deb
+          name: ${{ matrix.dockerarch }}.deb
           path: |
-            ./*${{ matrix.arch }}.deb
+            ./*${{ matrix.dockerarch }}.deb
 
   docker:
     runs-on: ubuntu-20.04
@@ -95,18 +104,18 @@ jobs:
           submodules: 'recursive'
 
       - name: fetch
-        if: false
+        if: env.fetchassets==''
         uses: actions/download-artifact@v2
         with:
           path: ./
 
       - name: Safe download workflow artifact
-        if: true
+        if: env.fetchassets!=''
         uses: Legit-Labs/action-download-artifact@v2.18.0
         with:
           workflow: build.yml
           path: .
-          run_number: 27  
+          run_number: ${{ env.fetchassets }}  
           workflow_conclusion: failure
         
 
