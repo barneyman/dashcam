@@ -25,9 +25,9 @@ jobs:
           - arch: aarch64
             distro: bullseye
             dockerarch: arm64
-          - arch: armv7
-            distro: bullseye
-            dockerarch: armv7
+          # - arch: armv7
+          #   distro: bullseye
+          #   dockerarch: armv7
           - arch: amd64
             dockerarch: amd64
 
@@ -142,7 +142,7 @@ jobs:
           file: buildx/Dockerfile.ringbuffer
           cache-from: type=gha
           cache-to: type=gha
-          platforms: linux/arm/v7,linux/arm64,linux/amd64
+          platforms: linux/arm64,linux/amd64
           push: true
           tags: ghcr.io/barneyman/ringbuffer
           labels: latest
