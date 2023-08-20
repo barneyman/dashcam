@@ -1,0 +1,79 @@
+name: Compile and Package
+on:
+  push:
+    branches: [ main ]
+
+    paths:
+      - 'buildx/other/**'
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  ROOTPWD: ${{ secrets.ROOTPWD }}
+
+jobs:
+
+  docker-other:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'      
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}        
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and push chrony
+        uses: docker/build-push-action@v4
+        with:
+          context: buildx/other/gpsd-chrony
+          file: buildx/other/gpsd-chrony/Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha
+          platforms: linux/arm/v6,linux/amd64
+          push: true
+          tags: ghcr.io/barneyman/gpsd-chrony-ntp
+          labels: |
+            latest
+            unstable
+
+      - name: Build and push sql
+        uses: docker/build-push-action@v4
+        with:
+          context: buildx/other/mysql
+          file: buildx/other/mysql/Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha
+          platforms: linux/arm/v8,linux/amd64
+          push: true
+          tags: ghcr.io/barneyman/mysql
+          labels: |
+            latest
+            unstable
+          build-args: |
+            ROOTPWD=${{ env.ROOTPWD }}
+
+      - name: Build and push rtsp
+        uses: docker/build-push-action@v4
+        with:
+          context: buildx/other/rtsp-simple-server
+          file: buildx/other/rtsp-simple-server/Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha
+          platforms: linux/arm/v7,linux/arm64
+          push: true
+          tags: ghcr.io/barneyman/rtsp
+          labels: |
+            latest
+            unstable
+
+      # need dregsy 
+      # need hostapd/dnsmasq
