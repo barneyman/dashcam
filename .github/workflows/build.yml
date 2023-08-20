@@ -203,6 +203,20 @@ jobs:
           build-args: |
             ROOTPWD=${{ env.ROOTPWD }}
 
+      - name: Build and push rtsp
+        uses: docker/build-push-action@v4
+        with:
+          context: buildx/rtsp-simple-server
+          file: buildx/rtsp-simple-server/Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha
+          platforms: linux/arm/v7,linux/arm64
+          push: true
+          tags: ghcr.io/barneyman/rtsp
+          labels: |
+            latest
+            unstable
+
       # need dregsy 
       # need hostapd/dnsmasq
 
