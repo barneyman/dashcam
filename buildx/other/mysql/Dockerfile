@@ -1,6 +1,5 @@
 # breadcrumb https://github.com/docker/buildx/issues/574
 ARG BUILDFROM=${TARGETARCH}${TARGETVARIANT}/mysql:8
-
 FROM $BUILDFROM
 
 ARG ROOTPWD
