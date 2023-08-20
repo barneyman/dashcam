@@ -148,7 +148,7 @@ jobs:
           cache-to: type=gha
           platforms: linux/arm64,linux/amd64,linux/arm/v7
           push: true
-          tags: ghcr.io/barneyman/ringbuffer
+          tags: ghcr.io/barneyman/dashcam/ringbuffer
           labels: latest
           build-args: |
             STARTAPP=ringbuffer
@@ -179,7 +179,7 @@ jobs:
           cache-to: type=gha
           platforms: linux/arm/v6,linux/amd64
           push: true
-          tags: ghcr.io/barneyman/gpsd-chrony-ntp
+          tags: ghcr.io/barneyman/dashcam/gpsd-chrony-ntp
           labels: latest
 
       - name: Build and push sql
@@ -191,9 +191,11 @@ jobs:
           cache-to: type=gha
           platforms: linux/arm/v8,linux/amd64
           push: true
-          tags: ghcr.io/barneyman/mysql
+          tags: ghcr.io/barneyman/dashcam/mysql
           labels: latest
           build-args: |
             ROOTPWD=${{ env.ROOTPWD }}
 
+      # need dregsy 
+      # need hostapd/dnsmasq
 
