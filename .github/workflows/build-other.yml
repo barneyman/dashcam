@@ -54,7 +54,7 @@ jobs:
           file: buildx/other/mysql/Dockerfile
           cache-from: type=gha
           cache-to: type=gha
-          platforms: linux/amd64, linux/arm/v8
+          platforms: linux/amd64, linux/arm64/v8
           push: true
           tags: ghcr.io/barneyman/mysql
           labels: |
