@@ -62,8 +62,6 @@ jobs:
             unstable
           build-args: |
             ROOTPWD=${{ env.ROOTPWD }}
-            BUILDFROM=mysql
-
 
       - name: Build and push rtsp
         uses: docker/build-push-action@v4
