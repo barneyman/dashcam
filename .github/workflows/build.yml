@@ -10,6 +10,7 @@ env:
   # give this a run number to avoid a lengthy build
   # ie when just testing the docker/downstream stuff
   fetchassets: ''
+  ROOTPWD: ${{ secrets.ROOTPWD }}
 
 jobs:
   compile:
@@ -169,17 +170,30 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build and push
+      - name: Build and push chrony
         uses: docker/build-push-action@v4
         with:
           context: buildx/gpsd-chrony
           file: buildx/gpsd-chrony/Dockerfile
           cache-from: type=gha
           cache-to: type=gha
-          platforms: linux/arm64,linux/amd64.linux/arm/v7
+          platforms: linux/arm/v6,linux/amd64
           push: true
-          tags: ghcr.io/barneyman/chrony
+          tags: ghcr.io/barneyman/gpsd-chrony-ntp
           labels: latest
 
+      - name: Build and push sql
+        uses: docker/build-push-action@v4
+        with:
+          context: buildx/mysql
+          file: buildx/mysql/Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha
+          platforms: linux/arm/v8,linux/amd64
+          push: true
+          tags: ghcr.io/barneyman/mysql
+          labels: latest
+          build-args: |
+            ROOTPWD=${{ env.ROOTPWD }}
 
 
