@@ -26,9 +26,9 @@ jobs:
           - arch: aarch64
             distro: bullseye
             dockerarch: arm64
-          - arch: armv7
-            distro: bullseye
-            dockerarch: armhf
+          # - arch: armv7
+          #   distro: bullseye
+          #   dockerarch: armhf
           - arch: amd64
             dockerarch: amd64
 
@@ -146,10 +146,13 @@ jobs:
           file: buildx/Dockerfile.ringbuffer
           cache-from: type=gha
           cache-to: type=gha
-          platforms: linux/arm64,linux/amd64,linux/arm/v7
+          platforms: linux/arm64,linux/amd64
+          #,linux/arm/v7
           push: true
-          tags: ghcr.io/barneyman/dashcam/ringbuffer
-          labels: latest
+          tags: ghcr.io/barneyman/ringbuffer
+          labels: |
+            latest
+            unstable
           build-args: |
             STARTAPP=ringbuffer
 
@@ -179,8 +182,10 @@ jobs:
           cache-to: type=gha
           platforms: linux/arm/v6,linux/amd64
           push: true
-          tags: ghcr.io/barneyman/dashcam/gpsd-chrony-ntp
-          labels: latest
+          tags: ghcr.io/barneyman/gpsd-chrony-ntp
+          labels: |
+            latest
+            unstable
 
       - name: Build and push sql
         uses: docker/build-push-action@v4
@@ -191,8 +196,10 @@ jobs:
           cache-to: type=gha
           platforms: linux/arm/v8,linux/amd64
           push: true
-          tags: ghcr.io/barneyman/dashcam/mysql
-          labels: latest
+          tags: ghcr.io/barneyman/mysql
+          labels: |
+            latest
+            unstable
           build-args: |
             ROOTPWD=${{ env.ROOTPWD }}
 
