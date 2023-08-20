@@ -1,0 +1,4 @@
+GPSD_OPTIONS="-n -b"
+DEVICES="/dev/ttyS0"
+GPSD_SOCKET="/var/run/gpsd.sock"
+BAUDRATE="9600"
