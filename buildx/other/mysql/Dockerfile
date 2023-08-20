@@ -1,10 +1,8 @@
 FROM mysql
 
-WORKDIR /docker-entrypoint-initdb.d
-
 ARG ROOTPWD
-
 ENV MYSQL_ROOT_PASSWORD=$ROOTPWD
 
-COPY scripts/* .
-
+# these have to be added so they are a layer each
+ADD scripts/aaa-create-db.sql /docker-entrypoint-initdb.d/aaa.sql
+ADD scripts/aab-create-users.sql /docker-entrypoint-initdb.d/aab.sql
