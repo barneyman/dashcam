@@ -9,7 +9,7 @@ on:
 env:
   # give this a run number to avoid a lengthy build
   # ie when just testing the docker/downstream stuff
-  fetchassets: '37'
+  fetchassets: ''
 
 jobs:
   compile:
@@ -25,9 +25,9 @@ jobs:
           - arch: aarch64
             distro: bullseye
             dockerarch: arm64
-          # - arch: armv7
-          #   distro: bullseye
-          #   dockerarch: armv7
+          - arch: armv7
+            distro: bullseye
+            dockerarch: armhf
           - arch: amd64
             dockerarch: amd64
 
@@ -97,7 +97,7 @@ jobs:
           path: |
             ./*${{ matrix.dockerarch }}.deb
 
-  docker:
+  docker-dashcam:
     runs-on: ubuntu-20.04
     permissions:
       # or the push fails
@@ -145,7 +145,7 @@ jobs:
           file: buildx/Dockerfile.ringbuffer
           cache-from: type=gha
           cache-to: type=gha
-          platforms: linux/arm64,linux/amd64
+          platforms: linux/arm64,linux/amd64.linux/arm/v7
           push: true
           tags: ghcr.io/barneyman/ringbuffer
           labels: latest
