@@ -76,7 +76,7 @@ package_all: package_apps
 package_apps:
 	- mkdir .debpkg-server/usr/
 	- mkdir .debpkg-server/usr/bin
-	sed -i 's/Architecture:.*/Architecture: $(DEBARCH)/' .debpkg-server/DEBIAN/control
+	sed -i 's/Architecture:.*/Architecture: $(ARCH)/' .debpkg-server/DEBIAN/control
 	sed -i 's/Package:.*/Package: dashcam-server-$(ARCH)/' .debpkg-server/DEBIAN/control
 	cp ringbuffer-$(ARCH) .debpkg-server/usr/bin/
 	cp joiner-$(ARCH) .debpkg-server/usr/bin/
