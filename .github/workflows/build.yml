@@ -5,6 +5,7 @@ on:
 
     paths-ignore:
       - 'buildx/other/**'
+      - '.github/workflows/build-other.yml'
 
   pull_request:
     types: [opened, synchronize, reopened]

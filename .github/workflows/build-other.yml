@@ -47,14 +47,14 @@ jobs:
             latest
             unstable
 
-      - name: Build and push sql
+      - name: Build and push sql - amd64
         uses: docker/build-push-action@v4
         with:
           context: buildx/other/mysql
           file: buildx/other/mysql/Dockerfile
           cache-from: type=gha
           cache-to: type=gha
-          platforms: linux/arm/v8,linux/amd64
+          platforms: linux/amd64
           push: true
           tags: ghcr.io/barneyman/mysql
           labels: |
@@ -62,6 +62,24 @@ jobs:
             unstable
           build-args: |
             ROOTPWD=${{ env.ROOTPWD }}
+            BUILDFROM=mysql
+
+      - name: Build and push sql - arm
+        uses: docker/build-push-action@v4
+        with:
+          context: buildx/other/mysql
+          file: buildx/other/mysql/Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha
+          platforms: linux/arm/v8
+          push: true
+          tags: ghcr.io/barneyman/mysql
+          labels: |
+            latest
+            unstable
+          build-args: |
+            ROOTPWD=${{ env.ROOTPWD }}
+            BUILDFROM=arm64v8/mysql
 
       - name: Build and push rtsp
         uses: docker/build-push-action@v4
