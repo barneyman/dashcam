@@ -5,6 +5,10 @@ INC = 1
 ARCH=amd64
 DEBARCH=$(ARCH)
 
+CPPFLAGS = -O0 -Wformat -ggdb3
+PRODFLAGS = -O3 -g0
+
+
 # pck-config options
 # RTSP_SERVER
 # GST_RTSP_SRV_CONFIG = `pkg-config --cflags --libs gstreamer-rtsp-server-1.0 gstreamer-1.0`
@@ -18,6 +22,8 @@ MYSQLCONFIG = `pkg-config --cflags --libs libmariadb`
 GPSD_CONFIG = `pkg-config --cflags --libs libgps`
 
 all: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) caps joiner test_sql
+github: 
+github: CPPFLAGS=$(PRODFLAGS)
 github: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) ringbuffer joiner package_apps
 
 # internal libs
@@ -28,13 +34,13 @@ HELPERBINS = $(GSTHELPERESINCLUDE)/helperBins
 NMEALIB = $(GSTHELPERESINCLUDE)/libnematode.a
 
 $(GSTHELPERLIB): $(wildcard $(GSTHELPERESINCLUDE)/*.cpp) $(wildcard $(GSTHELPERESINCLUDE)/*.h)
-	make -C $(GSTHELPERESINCLUDE) helperlib
+	make CPPFLAGS="$(CPPFLAGS)" -C $(GSTHELPERESINCLUDE) helperlib
 
 $(MYPLUGINSLIB):
-	make -C $(GSTHELPERESINCLUDE) myplugins 
+	make CPPFLAGS="$(CPPFLAGS)" -C $(GSTHELPERESINCLUDE) myplugins 
 
 $(NMEALIB):
-	make -C $(GSTHELPERESINCLUDE) nmealib 
+	make CPPFLAGS="$(CPPFLAGS)"-C $(GSTHELPERESINCLUDE) nmealib 
 
 
 MDNS_CPP_DIR = mdns_cpp
@@ -49,19 +55,19 @@ $(MDNS_CPP_LIB):
 
 
 ringbuffer: ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h)
-	g++ -g -o $@-$(ARCH) ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) $(GPSD_CONFIG) -I $(MDNS_CPP_INC) 
+	g++ $(CPPFLAGS) -o $@-$(ARCH) ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) $(GPSD_CONFIG) -I $(MDNS_CPP_INC) 
 
 joiner: joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h) $(wildcard ./*.h)
-	g++ -g -o $@-$(ARCH) joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
+	g++ $(CPPFLAGS) -o $@-$(ARCH) joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(NMEALIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
 
 test_sql: test_sql.cpp $(wildcard ./*.h)
-	g++ -g -o $@-$(ARCH) test_sql.cpp $(MYSQLCONFIG) $(GST_CONFIG)
+	g++ $(CPPFLAGS) -o $@-$(ARCH) test_sql.cpp $(MYSQLCONFIG) $(GST_CONFIG)
 
 test_nobins: test_nobins.cpp $(wildcard ./*.h) $(GSTHELPERLIB) $(wildcard $(HELPERBINS)/*.h)
-	g++ -g -o $@-$(ARCH) test_nobins.cpp $(GST_CONFIG) $(GSTHELPERLIB) $(MYPLUGINSLIB)
+	g++ $(CPPFLAGS) -o $@-$(ARCH) test_nobins.cpp $(GST_CONFIG) $(GSTHELPERLIB) $(MYPLUGINSLIB)
 
 test_gpsd: test_gpsd.cpp 
-	g++ -g -o $@-$(ARCH) test_gpsd.cpp $(GPSD_CONFIG)
+	g++ $(CPPFLAGS) -o $@-$(ARCH) test_gpsd.cpp $(GPSD_CONFIG)
 
 caps: ringbuffer
 	sudo setcap cap_net_admin=eip ./ringbuffer-$(ARCH)
