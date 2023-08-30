@@ -1,0 +1,10 @@
+<service-group>
+
+  <name replace-wildcards="yes">Dashcam on %h</name>
+
+  <service>
+    <type>_dashcam._tcp</type>
+    <port>8554</port>
+  </service>
+
+</service-group>
