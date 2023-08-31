@@ -1,6 +1,6 @@
 FROM debian:bullseye-slim
 RUN apt update
-RUN apt install -y avahi-daemon wget libcamera
+RUN apt install -y avahi-daemon wget libcamera-apps-lite
 COPY bjf.service /etc/avahi/services/
 
 RUN update-rc.d avahi-daemon defaults && update-rc.d avahi-daemon defaults
