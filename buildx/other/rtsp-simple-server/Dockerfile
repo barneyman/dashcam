@@ -1,6 +1,6 @@
-FROM debian:bullseye-slim
+FROM balenalib/raspberry-pi:bullseye-run-20230712
 RUN apt update
-RUN apt install -y avahi-daemon wget libcamera-apps-lite
+RUN apt install -y avahi-daemon wget libcamera0 libfreetype6 
 COPY bjf.service /etc/avahi/services/
 
 RUN update-rc.d avahi-daemon defaults && update-rc.d avahi-daemon defaults
