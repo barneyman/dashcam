@@ -8,7 +8,7 @@
             "name": "(gdb) test_sql",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/test_sql_amd64",
+            "program": "${workspaceFolder}/test_sql-amd64",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
@@ -32,7 +32,7 @@
             "name": "(gdb) test_nobins",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/test_nobins_amd64",
+            "program": "${workspaceFolder}/test_nobins-amd64",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
@@ -56,7 +56,7 @@
             "name": "(gdb) Launch ringbuffer",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/ringbuffer_amd64",
+            "program": "${workspaceFolder}/ringbuffer-amd64",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
@@ -114,7 +114,7 @@
             "name": "(gdb) Launch test_gpsd",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/test_gpsd_amd64",
+            "program": "${workspaceFolder}/test_gpsd-amd64",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
@@ -142,11 +142,11 @@
             "name": "(gdb) Launch join",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/joiner_amd64",
+            "program": "${workspaceFolder}/joiner-amd64",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
-            "environment": [    {"name":"GST_DEBUG", "value":"3,ptsnormalise:4,split*:4"},//,nmeasource:3,basesrc:3,default:4"},
+            "environment": [    {"name":"GST_DEBUG", "value":"3,bin:3,split*:3,default:4,videoencoder:4"},//,nmeasource:3,basesrc:3,default:4"},
                                 {"name":"GST_DEBUG_FILE", "value":"/workspaces/dashcam/joiner.log"},
                                 // {"name":"GST_DEBUG","value":"GST_TRACER:7"},
                                 // {"name": "GST_TRACERS", "value": "leaks(stack-traces-flags=full)"},
@@ -165,7 +165,7 @@
                     "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
                 }
-            ],"preLaunchTask":"${defaultBuildTask}"
+            ],"preLaunchTask":"make joiner"
         }
 
 

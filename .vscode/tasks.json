@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "make",
+            "label": "make all",
             "type": "shell",
             "command": "make ringbuffer joiner clean test_sql",
             "problemMatcher": [],
@@ -12,6 +12,17 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "make joiner",
+            "type": "shell",
+            "command": "make joiner",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
         }
+
     ]
 }

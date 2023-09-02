@@ -21,10 +21,10 @@
 class joinVidsPipeline : public gstreamPipeline
 {
 public:
-    joinVidsPipeline(std::vector<std::string> &files, const char*destination):
+    joinVidsPipeline(std::vector<std::string> &files, const char*destination,GstClockTime offset=GST_CLOCK_TIME_NONE, GstClockTime runtime=GST_CLOCK_TIME_NONE):
         gstreamPipeline("joinVidsPipeline"),
 #ifdef _USE_MULTI        
-        m_multisrc(this,files),
+        m_multisrc(this,files,offset,runtime),
 #else        
         m_src(this,files[0].c_str()),
 #endif        
@@ -100,8 +100,10 @@ int main()
 #else
     std::vector<std::string> files={"/vids/2023-03-060828Z_00000.mp4"};
 #endif
-    joinVidsPipeline joiner(files,"/workspaces/dashcam/combined.mp4");
+    joinVidsPipeline joiner(files,"/workspaces/dashcam/combined.mp4",90*GST_SECOND,100*GST_SECOND);
+//    joinVidsPipeline joiner(files,"/workspaces/dashcam/combined.mp4");
     joiner.Run();
+//    joiner.Run(10);
 
 
 }
