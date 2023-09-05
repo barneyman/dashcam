@@ -66,6 +66,8 @@ jobs:
             apt install -y libmariadb-dev libgps-dev
             apt install -y build-essential
             apt install -y cmake fakeroot
+            apt install -y libgps-dev
+            apt install -y libavahi-client-dev libavahi-glib-dev
 
           run: |
               make github ARCH=${{ matrix.dockerarch }} DEBARCH=${{ matrix.arch }}
@@ -88,6 +90,8 @@ jobs:
           sudo apt install -y libmariadb-dev
           sudo apt install -y build-essential
           sudo apt install -y cmake fakeroot
+          sudo apt install -y libgps-dev
+          sudo apt install -y libavahi-client-dev libavahi-glib-dev
 
           make github ARCH=${{ matrix.dockerarch }}
    

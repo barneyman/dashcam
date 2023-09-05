@@ -106,6 +106,12 @@ RUN apt install -y gstreamer1.0-omx-generic
 # intel vaapi hw encoding 
 RUN apt install -y gstreamer1.0-vaapi
 
+# gpsd dev
+RUN apt install -y libgps-dev
+
+# avahi
+RUN apt install -y dbus avahi-daemon libavahi-client-dev libavahi-glib-dev 
+
 # sql dev
 #RUN apt install -y libmariadb-dev
 WORKDIR /mariadb
@@ -151,6 +157,9 @@ RUN apt install -y libmariadb-dev
 
 # gpsd dev
 RUN apt install -y libgps-dev
+
+# avahi
+RUN apt install -y dbus avahi-daemon libavahi-client-dev libavahi-glib-dev 
 
 #####################
 
