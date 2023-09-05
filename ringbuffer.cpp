@@ -53,6 +53,8 @@ class ringBufferPipeline :
 
 public:
     ringBufferPipeline(const char *outdir, unsigned sliceMins=15):
+        avahiHelper("_dashcam._tcp"),
+        //avahiHelper("_barneyman._tcp"),
         gstreamPipeline("ringBufferPipeline"),
         m_sourceBins(NULL),
         m_browserDone(false),
@@ -62,7 +64,6 @@ public:
         m_dataFlowing(false),
 #endif        
         padProber(this),
-        m_browser(staticBrowse,this),
         m_sql("debian","dashcam","dashcam","dashcam")
     {
         // use NTP clock
