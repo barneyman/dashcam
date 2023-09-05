@@ -13,7 +13,7 @@
 // mdns
 #include "avahi_helper.h"
 
-#define _DEBUG_TIMESTAMPS
+//#define _DEBUG_TIMESTAMPS
 #ifdef _DEBUG_TIMESTAMPS
 #include "gstreamHelpers/myplugins/gstptsnormalise.h"
 #endif
@@ -34,13 +34,8 @@
 //#define _USE_NMEA
 //#define _USE_MDNS
 //#define _USE_PROBES
-//#define _USE_BARRIER
 
 #define USE_RTSP
-
-#ifdef _USE_BARRIER
-#include "gstreamHelpers/myplugins/gstbarrier.h"
-#endif
 
 // sudo setcap cap_net_admin=eip ./ringbuffer
 
@@ -131,10 +126,6 @@ public:
 
     bool buildPipeline()
     {
-#ifdef _USE_BARRIER
-        barrier_registerRunTimePlugin();
-        AddPlugin("barrier");
-#endif
 
 #ifdef _USE_NMEA
  #ifdef _DEBUG_TIMESTAMPS
@@ -142,36 +133,16 @@ public:
         AddPlugin("ptsnormalise","ptsnormalise_subs");
         bool linked=ConnectPipeline(m_nmea,*m_sinkBin,"ptsnormalise_subs")==0;
  #else
-  #ifdef _USE_BARRIER
-        //bool linked=ConnectPipeline(m_nmea,*m_sinkBin,"barrier");
-          bool linked=gst_element_link_many(
-            FindNamedPlugin(m_nmea),
-            FindNamedPlugin("barrier"),
-            FindNamedPlugin(*m_sinkBin),
-            NULL
-        );
-  #else
         bool linked=(ConnectPipeline(m_nmea,*m_sinkBin)==0);
   #endif
- #endif        
 
 
  #ifdef _DEBUG_TIMESTAMPS
         AddPlugin("ptsnormalise","ptsnormalise_video");
         linked=ConnectPipeline(*m_sourceBins,*m_sinkBin,"ptsnormalise_video")==0;
  #else
-  #ifdef _USE_BARRIER
-        //linked=ConnectPipeline(*m_sourceBins,*m_sinkBin,"barrier");
-        linked=gst_element_link_many(
-            FindNamedPlugin(*m_sourceBins),
-            FindNamedPlugin("barrier"),
-            FindNamedPlugin(*m_sinkBin),
-            NULL
-        );
-  #else        
         linked=(ConnectPipeline(*m_sourceBins,*m_sinkBin)==0);
   #endif
- #endif
 #else 
         bool linked=(ConnectPipeline(*m_sourceBins,*m_sinkBin)==0);
 #endif
