@@ -11,9 +11,7 @@
 #include <chrono>
 
 // mdns
-#include "mdns_cpp/mdns.hpp"
-#include "mdns_cpp/macros.hpp"
-#include "mdns_cpp/utils.hpp"
+#include "avahi_helper.h"
 
 #define _DEBUG_TIMESTAMPS
 #ifdef _DEBUG_TIMESTAMPS
@@ -48,8 +46,10 @@
 
 class ringBufferPipeline : 
     public gstreamPipeline, 
-    public padProber
+    public padProber,
+    public avahiHelper
 {
+
 
 public:
     ringBufferPipeline(const char *outdir, unsigned sliceMins=15):
@@ -67,12 +67,11 @@ public:
     {
         // use NTP clock
         //UseNTPv4Clock();
-#ifdef _USE_MDNS
-        while(!m_browserDone)
+
+        while(!avahi_finished())
         {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
-#endif        
 
         // use real time
         setRealtimeClock();
@@ -87,20 +86,13 @@ public:
         strftime(buffer,sizeof(buffer)-1,"/%FT%TZ_%%05d.mp4",info);
         m_outspec+=buffer;
 
+        if(m_servicesFound.size())
+        {
+            std::vector<std::string> urls;
 
         m_sinkBin=new gstSplitMuxOutBin(this,sliceMins*60,m_outspec.c_str());
 
-
-        // mark up the records
-        // WIFI may cause video jitters
-
-        //std::vector<std::string> urls={"rtsp://rpizerocam:8554/cam"};
-#ifdef USE_RTSP
-        std::vector<std::string> urls={"rtsp://vpnhack:8554/cam"};
-#else
-        std::vector<std::string> urls={"rtmp://vpnhack/cam"};
-#endif        
-        for(auto each=arecords.begin();each!=arecords.end();each++)
+            for(auto each=m_servicesFound.begin();each!=m_servicesFound.end();each++)
         {
             // rtsp://vpnhack:8554/cam
 #ifdef USE_RTSP
@@ -108,7 +100,7 @@ public:
 #else
             std::string url("rtmp://");
 #endif            
-            url+=*each;
+                url+=each->second;
 #ifdef USE_RTSP
             url+=":8554/cam";
 #else
@@ -125,25 +117,16 @@ public:
 
         m_fatal=buildPipeline();
     }
+    }
 
     ~ringBufferPipeline()
     {
         delete m_sinkBin;
         delete m_sourceBins;
-        m_browser.join();
     }
 
-    static void staticBrowse(ringBufferPipeline *owner)
-    {
-        owner->Browse();
-    }
 
-    void Browse()
-    {
-        mdns_cpp::mDNS mdns;
-        mdns.executeQuery("_dashcam._tcp.local.",arecords);
-        m_browserDone=true;
-    }    
+
 
     bool buildPipeline()
     {
@@ -388,7 +371,6 @@ protected:
     multiRemoteSourceBin<rtmpSourceBin> *m_sourceBins;
 #endif    
     gstSplitMuxOutBin *m_sinkBin;
-    std::thread m_browser;
     // TODO when i get to std-v20 implement this
     // std::binary_semaphore m_chapter_open;
     volatile bool m_chapter_open=false;

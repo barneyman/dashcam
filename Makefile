@@ -21,10 +21,12 @@ GST_CONFIG = `pkg-config --cflags --libs gstreamer-1.0 gstreamer-base-1.0 gstrea
 MYSQLCONFIG = `pkg-config --cflags --libs libmariadb`
 GPSD_CONFIG = `pkg-config --cflags --libs libgps`
 
-all: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(MDNS_CPP_LIB) caps joiner test_sql
+AVAHI_CONFIG = `pkg-config --cflags --libs avahi-glib avahi-client`
+
+all: $(GSTHELPERLIB) $(MYPLUGINSLIB) caps joiner test_sql
 github: 
 github: CPPFLAGS=$(PRODFLAGS)
-github: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(MDNS_CPP_LIB) ringbuffer joiner package_apps
+github: $(GSTHELPERLIB) $(MYPLUGINSLIB) ringbuffer joiner package_apps
 
 # internal libs
 GSTHELPERESINCLUDE = gstreamHelpers
@@ -38,22 +40,11 @@ $(GSTHELPERLIB): $(wildcard $(GSTHELPERESINCLUDE)/*.cpp) $(wildcard $(GSTHELPERE
 $(MYPLUGINSLIB):
 	make CPPFLAGS="$(CPPFLAGS)" -C $(GSTHELPERESINCLUDE) myplugins 
 
-MDNS_CPP_DIR = mdns_cpp
-MDNS_BUILD_DIR = $(MDNS_CPP_DIR)/build
-MDNS_CPP_INC = $(MDNS_CPP_DIR)/include
-MDNS_CPP_LIB = $(MDNS_CPP_DIR)/build/lib/libmdns_cpp.a
+ringbuffer: ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h)
+	g++ $(CPPFLAGS) -o $@-$(ARCH) ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(AVAHI_CONFIG) $(GST_CONFIG) $(MYSQLCONFIG) $(GPSD_CONFIG) 
 
-$(MDNS_CPP_LIB):
-	- mkdir $(MDNS_BUILD_DIR)
-	cd $(MDNS_BUILD_DIR) && cmake .. && cd .. && cd ..
-	make -C $(MDNS_BUILD_DIR)
-
-
-ringbuffer: ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(MDNS_CPP_LIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h)
-	g++ $(CPPFLAGS) -o $@-$(ARCH) ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) $(GPSD_CONFIG) -I $(MDNS_CPP_INC) 
-
-joiner: joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(MDNS_CPP_LIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h) $(wildcard ./*.h)
-	g++ $(CPPFLAGS) -o $@-$(ARCH) joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(MDNS_CPP_LIB) $(GST_CONFIG) $(MYSQLCONFIG) -I $(MDNS_CPP_INC) 
+joiner: joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h) $(wildcard ./*.h)
+	g++ $(CPPFLAGS) -o $@-$(ARCH) joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(GST_CONFIG) $(MYSQLCONFIG) 
 
 test_sql: test_sql.cpp $(wildcard ./*.h)
 	g++ $(CPPFLAGS) -o $@-$(ARCH) test_sql.cpp $(MYSQLCONFIG) $(GST_CONFIG)

@@ -1,6 +1,3 @@
 [submodule "gstreamHelpers"]
 	path = gstreamHelpers
 	url = https://github.com/barneyman/gstreamHelpers.git
-[submodule "mdns_cpp"]
-	path = mdns_cpp
-	url = https://github.com/barneyman/mdns_cpp
