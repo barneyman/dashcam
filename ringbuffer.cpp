@@ -13,11 +13,6 @@
 // mdns
 #include "avahi_helper.h"
 
-//#define _DEBUG_TIMESTAMPS
-#ifdef _DEBUG_TIMESTAMPS
-#include "gstreamHelpers/myplugins/gstptsnormalise.h"
-#endif
-
 #include "gstreamHelpers/helperBins/probeHelper.h"
 
 #include "dashcam_sql.h"
@@ -128,21 +123,8 @@ public:
     {
 
 #ifdef _USE_NMEA
- #ifdef _DEBUG_TIMESTAMPS
-        ptsnormalise_registerRunTimePlugin();
-        AddPlugin("ptsnormalise","ptsnormalise_subs");
-        bool linked=ConnectPipeline(m_nmea,*m_sinkBin,"ptsnormalise_subs")==0;
- #else
         bool linked=(ConnectPipeline(m_nmea,*m_sinkBin)==0);
-  #endif
-
-
- #ifdef _DEBUG_TIMESTAMPS
-        AddPlugin("ptsnormalise","ptsnormalise_video");
-        linked=ConnectPipeline(*m_sourceBins,*m_sinkBin,"ptsnormalise_video")==0;
- #else
         linked=(ConnectPipeline(*m_sourceBins,*m_sinkBin)==0);
-  #endif
 #else 
         bool linked=(ConnectPipeline(*m_sourceBins,*m_sinkBin)==0);
 #endif
