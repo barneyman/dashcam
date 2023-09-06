@@ -82,8 +82,13 @@ public:
         return true;
     }
 
+    std::string to_string() const
+    {
+        return std::string(m_guid,size());
+    }
+
     operator void*() { return &m_guid; }
-    size_t size() { return sizeof(m_guid)-1; }
+    size_t size() const { return sizeof(m_guid)-1; }
 
 protected:
 
@@ -125,6 +130,8 @@ public:
     // virtual void fillBindRowset(size_t,MYSQL_BIND *bind, int *dir){}
 
 };
+
+// chapters
 
 class chapter_params : public nullAccessor
 {
@@ -279,4 +286,104 @@ public:
     }
 };
 
-#endif
+// grabs
+
+class get_requested_grabs : public nullAccessor
+{
+public:
+    virtual void fillBind(size_t,MYSQL_BIND *bind, int *dir)
+    {
+
+    }
+
+    virtual void fillBindRowset(size_t,MYSQL_BIND *bind, int *dir)
+    {
+
+        bind[0].buffer_type=MYSQL_TYPE_STRING;
+        bind[0].buffer=m_grabid;
+        bind[0].buffer_length=m_grabid.size();
+
+        bind[1].buffer_type=MYSQL_TYPE_DATETIME;
+        bind[1].buffer=&m_timeIn.m_now;
+        bind[1].buffer_length=sizeof(MYSQL_TYPE_DATETIME);
+
+        bind[2].buffer_type=MYSQL_TYPE_DATETIME;
+        bind[2].buffer=&m_timeOut.m_now;
+        bind[2].buffer_length=sizeof(MYSQL_TYPE_DATETIME);
+
+    }
+
+    maria_guid m_grabid;
+    maria_timestamp m_timeIn, m_timeOut;
+
+};
+
+class update_grab : public nullAccessor
+{
+public:
+    virtual void fillBind(size_t,MYSQL_BIND *bind, int *dir)
+    {
+        bind[0].buffer_type=MYSQL_TYPE_STRING;
+        bind[0].buffer=m_grabid;
+        bind[0].buffer_length=m_grabid.size();
+        dir[0]=SQL_PARAM_IN;
+
+        bind[1].buffer_type=MYSQL_TYPE_SHORT;
+        bind[1].buffer=&m_result;
+        bind[1].buffer_length=sizeof(m_result);
+        dir[1]=SQL_PARAM_IN;
+
+        bind[2].buffer_type=MYSQL_TYPE_STRING;
+        bind[2].buffer=(void*)m_grabfilename.c_str();
+        bind[2].buffer_length=m_grabfilename.size();
+        dir[2]=SQL_PARAM_IN;
+
+
+    }
+
+    maria_guid m_grabid;
+    uint16_t m_result;
+    std::string m_grabfilename;
+};
+
+class chapter_list : public nullAccessor
+{
+public:
+
+    virtual void fillBind(size_t,MYSQL_BIND *bind, int *dir)
+    {
+        bind[0].buffer_type=MYSQL_TYPE_DATETIME;
+        bind[0].buffer=&m_timeIn.m_now;
+        bind[0].buffer_length=sizeof(MYSQL_TYPE_DATETIME);
+        dir[0]=SQL_PARAM_IN;
+
+        bind[1].buffer_type=MYSQL_TYPE_DATETIME;
+        bind[1].buffer=&m_timeOut.m_now;
+        bind[1].buffer_length=sizeof(MYSQL_TYPE_DATETIME);
+        dir[1]=SQL_PARAM_IN;
+
+    }
+
+    virtual void fillBindRowset(size_t,MYSQL_BIND *bind, int *dir)
+    {
+        bind[0].buffer_type=MYSQL_TYPE_STRING;
+        bind[0].buffer=m_grabfilename;
+        bind[0].buffer_length=sizeof(m_grabfilename)-1;
+
+        bind[1].buffer_type=MYSQL_TYPE_LONGLONG;
+        bind[1].buffer=&m_offsetms;
+        bind[1].buffer_length=sizeof(m_offsetms);
+
+        bind[2].buffer_type=MYSQL_TYPE_LONGLONG;
+        bind[2].buffer=&m_lengthms;
+        bind[2].buffer_length=sizeof(m_lengthms);
+
+    }
+
+    maria_timestamp m_timeIn, m_timeOut;
+    char m_grabfilename[1024];
+    long long m_offsetms, m_lengthms;
+
+};
+
+#endif // once guard

@@ -100,12 +100,44 @@ void intHandler(int dummy)
     ctrlCseen = true;
 }
 
+#define USE_SQL
+
+#ifdef USE_SQL
+#include "jn_tasks.h"
+#endif
 
 int main()
 {
 
     signal(SIGINT, intHandler);
     signal(SIGTERM, intHandler);
+
+#ifdef USE_SQL
+
+    mariaDBconnection sql("debian","dashcam","dashcam","dashcam");
+
+    // just stop ref count dropping out
+    gstreamPipeline sentry("Sentry");
+
+    grabber theGrabber(sql);
+
+    GstClockTime offsetms, lengthms;
+    maria_guid id;
+
+    for(auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);filelist.size();filelist=theGrabber.getGrabDetails(offsetms,lengthms,id))
+    {
+        std::string filename="/vids/"+id.to_string()+".mp4";
+
+        joinVidsPipeline(filelist,
+                                    filename.c_str(),
+                                    offsetms*GST_MSECOND,
+                                    (offsetms+lengthms)*GST_MSECOND).Run();
+
+        theGrabber.updateGrabDetails(id,0,filename);
+    }
+
+#else
+
 
 #ifdef _USE_MULTI        
     std::vector<std::string> files=collectFiles("/vids/");
@@ -124,6 +156,6 @@ int main()
 
 //    joiner.Run();
     joiner.Run(10);
-
+#endif
 
 }
