@@ -51,6 +51,11 @@ public:
 #endif        
     }
 
+    ~joinVidsPipeline()
+    {
+        releaseMyRequestedPads();
+    }
+
 protected:
 
 #ifdef _USE_MULTI        
@@ -124,16 +129,26 @@ int main()
     GstClockTime offsetms, lengthms;
     maria_guid id;
 
-    for(auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);filelist.size();filelist=theGrabber.getGrabDetails(offsetms,lengthms,id))
+    //auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);
+    for(auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);theGrabber.isPopulated();filelist=theGrabber.getGrabDetails(offsetms,lengthms,id))
     {
-        std::string filename="/vids/"+id.to_string()+".mp4";
 
-        joinVidsPipeline(filelist,
-                                    filename.c_str(),
-                                    offsetms*GST_MSECOND,
-                                    (offsetms+lengthms)*GST_MSECOND).Run();
+        if(filelist.size())
+        {
 
-        theGrabber.updateGrabDetails(id,0,filename);
+            std::string filename="/vids/grabs/"+id.to_string()+".mp4";
+
+            printf("-> %s\n\r",filename.c_str());
+
+            if(joinVidsPipeline(filelist,
+                                        filename.c_str()
+                                        // offsetms*GST_MSECOND,
+                                        // (offsetms+lengthms)*GST_MSECOND
+                                        ).Run())
+            {
+                theGrabber.updateGrabDetails(id,0,filename);
+            }
+        }
     }
 
 #else

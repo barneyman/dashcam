@@ -19,43 +19,51 @@ public:
         fetchGrabs();
     }
 
+    bool isPopulated() 
+    { 
+        return m_grabsToGet.size()>0; 
+    }
 
     std::vector<std::string> getGrabDetails(GstClockTime &offsetms,GstClockTime &lengthms, maria_guid &id)
     {
-
-        std::tuple<maria_guid,maria_timestamp,maria_timestamp> firstGrab=m_grabsToGet.front();
         std::vector<std::string> m_chapters;
 
-        id=std::get<0>(firstGrab);
-
-        mariaBinding<chapter_list,3> fetchChapterParams;
-        mySQLprepared<chapter_list,3> callFetchChapter(m_sql, "CALL sp_get_chapter_list(?,?)");
-
-        fetchChapterParams.m_timeIn=std::get<1>(firstGrab);
-        fetchChapterParams.m_timeOut=std::get<2>(firstGrab);
-
-        if(callFetchChapter.bind(fetchChapterParams))
+        if(isPopulated())
         {
-            offsetms=GST_CLOCK_TIME_NONE;
+            std::tuple<maria_guid,maria_timestamp,maria_timestamp> firstGrab=m_grabsToGet.front();
 
-            if(callFetchChapter.execAndFetch(fetchChapterParams,[&](int flags)
+            id=std::get<0>(firstGrab);
+
+            mariaBinding<chapter_list,3> fetchChapterParams;
+            mySQLprepared<chapter_list,3> callFetchChapter(m_sql, "CALL sp_get_chapter_list(?,?)");
+
+            fetchChapterParams.m_timeIn=std::get<1>(firstGrab);
+            fetchChapterParams.m_timeOut=std::get<2>(firstGrab);
+
+            if(callFetchChapter.bind(fetchChapterParams))
             {
-                m_chapters.push_back(fetchChapterParams.m_grabfilename);
-                // take first one only
-                if(offsetms==GST_CLOCK_TIME_NONE)
+                offsetms=GST_CLOCK_TIME_NONE;
+
+                if(callFetchChapter.execAndFetch(fetchChapterParams,[&](int flags)
                 {
-                    offsetms=fetchChapterParams.m_offsetms;
-                    lengthms=fetchChapterParams.m_lengthms;
+                    m_chapters.push_back(fetchChapterParams.m_grabfilename);
+                    // take first one only
+                    if(offsetms==GST_CLOCK_TIME_NONE)
+                    {
+                        offsetms=fetchChapterParams.m_offsetms;
+                        lengthms=fetchChapterParams.m_lengthms;
+                    }
+                    printf("\t%s\n\r",fetchChapterParams.m_grabfilename);
+                }))
+                {
                 }
-                printf("\t%s\n\r",fetchChapterParams.m_grabfilename);
-            }))
-            {
+
+
             }
 
+            m_grabsToGet.pop();                
 
         }
-
-        m_grabsToGet.pop();                
         return m_chapters;
 
     }
