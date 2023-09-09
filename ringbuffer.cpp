@@ -112,6 +112,7 @@ public:
 
     ~ringBufferPipeline()
     {
+        releaseMyRequestedPads();
         delete m_sinkBin;
         delete m_sourceBins;
     }
