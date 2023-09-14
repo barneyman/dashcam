@@ -302,10 +302,10 @@ public:
     }
 
     // from pipeline
-    virtual void pipelineStateChangeMessageHandler(GstMessage*msg, GstState old_state,GstState new_state, GstState pendingState)
+    virtual void pipelineStateChangeMessageHandler(GstState old_state,GstState new_state, GstState pendingState)
     {
         // must call down
-        gstreamPipeline::pipelineStateChangeMessageHandler(msg,old_state,new_state,pendingState);
+        gstreamPipeline::pipelineStateChangeMessageHandler(old_state,new_state,pendingState);
 
         if(new_state==GST_STATE_PLAYING)
         {
