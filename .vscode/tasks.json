@@ -22,6 +22,26 @@
                 "kind": "build",
                 "isDefault": false
             }
+        },
+        {
+            "label": "make test_composite",
+            "type": "shell",
+            "command": "make test_composite",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },        
+        {
+            "label": "make testsql",
+            "type": "shell",
+            "command": "make test_sql",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
         }
 
     ]

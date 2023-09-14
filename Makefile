@@ -55,6 +55,9 @@ test_nobins: test_nobins.cpp $(wildcard ./*.h) $(GSTHELPERLIB) $(wildcard $(HELP
 test_gpsd: test_gpsd.cpp 
 	g++ $(CPPFLAGS) -o $@-$(ARCH) test_gpsd.cpp $(GPSD_CONFIG)
 
+test_composite: test_composite.cpp
+	g++ $(CPPFLAGS) -o $@-$(ARCH) test_composite.cpp $(GST_CONFIG) $(GSTHELPERLIB) $(MYPLUGINSLIB)
+
 caps: ringbuffer
 	sudo setcap cap_net_admin=eip ./ringbuffer-$(ARCH)
 
