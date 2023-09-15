@@ -19,7 +19,7 @@
 				"github.vscode-github-actions",
 				"ms-vscode.cpptools-extension-pack",
 				"me-dutour-mathieu.vscode-github-actions"
-			],
+			]
 
 		}
 	},
@@ -39,6 +39,7 @@
 	"remoteUser": "root",
 
 	//"runArgs": ["--device=/dev/dri/card0","--device=/dev/dri/renderD128", "--network=host", "-v","/home/pi/source/bjf/dashcam/vids:/vids", "--cap-add=cap_net_admin"]
-	"runArgs": ["--network=host", "-v","${localWorkspaceFolder}/vids:/vids", "--cap-add=cap_net_admin", "-v","/dev/fb0:/dev/fb0"]
+	//"runArgs": ["--network=host", "-v","${localWorkspaceFolder}/vids:/vids", "--cap-add=cap_net_admin", "-v","/dev/fb0:/dev/fb0"]
+	"runArgs": ["--network=host", "--privileged","-e","DISPLAY=debian:0", "-v","${localWorkspaceFolder}/vids:/vids"]
 
 }
