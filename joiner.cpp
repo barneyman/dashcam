@@ -21,12 +21,13 @@ public:
         gstreamPipeline("joinVidsPipeline"),
 #ifdef _USE_MULTI        
         m_multisrc(this,files,offset,runtime),
-        //m_mixer(this,2),
+        m_mixer(this),
 #else        
         m_src(this,files[0].c_str()),
 #endif        
 #ifdef _USE_PANGO
-        m_meta(this, _PANGO_SPEED | _PANGO_LONGLAG | _PANGO_UTC),
+        //m_meta(this, _PANGO_SPEED | _PANGO_LONGLAG | _PANGO_UTC),
+        m_meta(this, _PANGO_LONGLAG ),
 #endif        
         m_out(this,destination)
 
@@ -34,7 +35,13 @@ public:
 #ifdef _USE_PANGO
 #ifdef _USE_MULTI        
 
-        ConnectPipeline(m_multisrc,m_out,m_meta);
+        //ConnectPipeline(m_multisrc,m_out,m_meta);
+
+
+
+        ConnectPipeline(m_mixer,m_out,m_meta);
+        ConnectPipeline(m_multisrc,m_mixer);
+        ConnectPipeline(m_multisrc,m_meta);
 
         // need to handle subtitles turning up for the compositor
         // ConnectPipeline(m_multisrc,m_mixer);
@@ -60,7 +67,7 @@ protected:
 
 #ifdef _USE_MULTI        
     gstMP4DemuxDecodeSparseBin m_multisrc;
-//    gstVideoMixerBin m_mixer;
+    gstVideoMixerBin m_mixer;
 #else    
     gstMP4DemuxDecodeBin m_src;
 #endif    
@@ -129,26 +136,32 @@ int main()
     GstClockTime offsetms, lengthms;
     maria_guid id;
 
-    //auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);
-    for(auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);theGrabber.isPopulated();filelist=theGrabber.getGrabDetails(offsetms,lengthms,id))
+    while(true)
     {
-
-        if(filelist.size())
+        //auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);
+        for(auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);theGrabber.isPopulated();filelist=theGrabber.getGrabDetails(offsetms,lengthms,id))
         {
 
-            std::string filename="/vids/grabs/"+id.to_string()+".mp4";
-
-            printf("-> %s\n\r",filename.c_str());
-
-            if(joinVidsPipeline(filelist,
-                                        filename.c_str()
-                                        // offsetms*GST_MSECOND,
-                                        // (offsetms+lengthms)*GST_MSECOND
-                                        ).Run())
+            if(filelist.size())
             {
-                theGrabber.updateGrabDetails(id,0,filename);
+
+                std::string filename="/vids/grabs/"+id.to_string()+".mp4";
+
+                printf("-> %s for %f s\n\r",filename.c_str(), (float)(lengthms/1000));
+
+                if(joinVidsPipeline(filelist,
+                                            filename.c_str(),
+                                            offsetms*GST_MSECOND,
+                                            (offsetms+lengthms)*GST_MSECOND
+                                            ).Run())
+                {
+                    theGrabber.updateGrabDetails(id,0,filename);
+                }
+
             }
+
         }
+        std::this_thread::sleep_for(std::chrono::minutes(10));
     }
 
 #else
