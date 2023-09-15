@@ -136,7 +136,7 @@ int main()
     GstClockTime offsetms, lengthms;
     maria_guid id;
 
-    while(true)
+    while(!ctrlCseen)
     {
         //auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);
         while(theGrabber.isPopulated())
