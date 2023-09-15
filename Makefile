@@ -7,7 +7,7 @@ DEBARCH=$(ARCH)
 
 CPPFLAGS = -O0 -Wformat -ggdb3
 PRODFLAGS = -O3 -g0
-
+LEAKFLAGS = -O0 -Wformat -ggdb3 -fsanitize=address -fno-omit-frame-pointer
 
 # pck-config options
 # RTSP_SERVER
@@ -24,9 +24,14 @@ GPSD_CONFIG = `pkg-config --cflags --libs libgps`
 AVAHI_CONFIG = `pkg-config --cflags --libs avahi-glib avahi-client`
 
 all: $(GSTHELPERLIB) $(MYPLUGINSLIB) caps joiner test_sql
+
 github: 
 github: CPPFLAGS=$(PRODFLAGS)
 github: $(GSTHELPERLIB) $(MYPLUGINSLIB) ringbuffer joiner package_apps
+
+leaks:
+leaks: CPPFLAGS=$(LEAKFLAGS)
+leaks: $(GSTHELPERLIB) $(MYPLUGINSLIB) ringbuffer joiner 
 
 # internal libs
 GSTHELPERESINCLUDE = gstreamHelpers
