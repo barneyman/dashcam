@@ -24,12 +24,6 @@
 
 #include <signal.h>
 
-
-
-//#define _USE_NMEA
-//#define _USE_MDNS
-//#define _USE_PROBES
-
 #define USE_RTSP
 
 // sudo setcap cap_net_admin=eip ./ringbuffer
@@ -49,10 +43,7 @@ public:
         m_sourceBins(NULL),
         m_browserDone(false),
         m_fatal(false),
-#ifdef _USE_NMEA        
         m_nmea(this),
-        m_dataFlowing(false),
-#endif        
         padProber(this),
         m_sql("debian","dashcam","dashcam","dashcam")
     {
@@ -81,33 +72,33 @@ public:
         {
             std::vector<std::string> urls;
 
-        m_sinkBin=new gstSplitMuxOutBin(this,sliceMins*60,m_outspec.c_str());
+            m_sinkBin=new gstSplitMuxOutBin(this,sliceMins*60,m_outspec.c_str());
 
             for(auto each=m_servicesFound.begin();each!=m_servicesFound.end();each++)
-        {
-            // rtsp://vpnhack:8554/cam
-#ifdef USE_RTSP
-            std::string url("rtsp://");
-#else
-            std::string url("rtmp://");
-#endif            
+            {
+                // rtsp://vpnhack:8554/cam
+    #ifdef USE_RTSP
+                std::string url("rtsp://");
+    #else
+                std::string url("rtmp://");
+    #endif            
                 url+=each->second;
-#ifdef USE_RTSP
-            url+=":8554/cam";
-#else
-            url+=":1935/cam";
-#endif            
-            urls.push_back(url);
+    #ifdef USE_RTSP
+                url+=":8554/cam";
+    #else
+                url+=":1935/cam";
+    #endif            
+                urls.push_back(url);
+            }
+
+    #ifdef USE_RTSP
+            m_sourceBins=new multiRemoteSourceBin<rtspSourceBin>(this,urls,"video/x-h264,stream-format=(string)avc,alignment=(string)au");
+    #else
+            m_sourceBins=new multiRemoteSourceBin<rtmpSourceBin>(this,urls,"video/x-h264,stream-format=(string)avc");
+    #endif
+
+            m_fatal=buildPipeline();
         }
-
-#ifdef USE_RTSP
-        m_sourceBins=new multiRemoteSourceBin<rtspSourceBin>(this,urls,"video/x-h264,stream-format=(string)avc,alignment=(string)au");
-#else
-        m_sourceBins=new multiRemoteSourceBin<rtmpSourceBin>(this,urls,"video/x-h264,stream-format=(string)avc");
-#endif
-
-        m_fatal=buildPipeline();
-    }
     }
 
     ~ringBufferPipeline()
@@ -123,58 +114,15 @@ public:
     bool buildPipeline()
     {
 
-#ifdef _USE_NMEA
         bool linked=(ConnectPipeline(m_nmea,*m_sinkBin)==0);
         linked=(ConnectPipeline(*m_sourceBins,*m_sinkBin)==0);
-#else 
-        bool linked=(ConnectPipeline(*m_sourceBins,*m_sinkBin)==0);
-#endif
 
         // now set up the pad block - the RTSP takes some time to start playing
         // if we send subs before it the runtime gets bent and join fails with decreasing timestamps
-#ifdef _USE_PROBES
-        attachProbes("nmeasource",GST_PAD_PROBE_TYPE_BLOCK,true,&m_nmea);
-        // TODO when handling multiple video streams this needs to block all until all streams are producing
-        attachProbes(*m_sourceBins,GST_PAD_PROBE_TYPE_BUFFER);
-#endif
 
         return linked;
     }
 
-#ifdef _USE_NMEA    
-
-    virtual GstPadProbeReturn blockProbe(GstPad * pad,GstPadProbeInfo * padinfo)
-    {
-        // }
-         GST_INFO_OBJECT (m_pipeline, "Probetype %s\r",getProbeNames(padinfo).c_str());
-
-        if(padinfo->type & GST_PAD_PROBE_TYPE_BUFFER)
-        {
-            if(m_dataFlowing)
-            {
-                return GST_PAD_PROBE_REMOVE;
-            }
-            GST_INFO_OBJECT (m_pipeline, "dropped");
-            return GST_PAD_PROBE_DROP;
-        }
-        return GST_PAD_PROBE_PASS;
-    }
-
-    virtual void bufferProbe(GstPad * pad,GstPadProbeInfo * padinfo)
-    {
-        // if(!m_dataFlowing)
-        // {
-        //     GstBuffer *theBuffer=gst_pad_probe_info_get_buffer(padinfo);
-        //     GstEvent *gap=gst_event_new_gap(0,theBuffer->pts);
-        //     if(!gst_pad_push_event(pad,gap))
-        //     {
-        //         GST_ERROR_OBJECT (m_pipeline, "gst_pad_push_event gap failed");
-        //     }
-        // }
-
-        m_dataFlowing=true;
-    }
-#endif
 
     virtual void SplitMuxOpenedSplit(GstClockTime splitStart, const char*newFile)
     {
@@ -217,7 +165,7 @@ public:
         // TODO use the proper time
         time_t rawtime;
         time(&rawtime);
-        GstClockTime gtime=(rawtime-3600)*GST_SECOND;
+        GstClockTime gtime=(rawtime-(86400*1))*GST_SECOND;
         m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(gtime));
 
         //m_chapter_open.unlock();
@@ -338,11 +286,7 @@ protected:
     boost::uuids::uuid m_journeyGuid, m_currentChapterGuid;
     GstClockTime m_basetime;
 
-
-#ifdef _USE_NMEA    
     gstNmeaToSubs m_nmea;
-    volatile bool m_dataFlowing;
-#endif    
 };
 
 
@@ -354,8 +298,13 @@ void intHandler(int dummy)
     ctrlCseen = true;
 }
 
+//#define _DEBUG
 
-ringBufferPipeline ringPipeline("/vids",15);
+#ifdef _DEBUG
+ringBufferPipeline ringPipeline("/vids",1);
+#else
+ringBufferPipeline ringPipeline("/vids",5);
+#endif
 
 void sliceNow(int)
 {
@@ -368,9 +317,12 @@ int main()
     signal(SIGTERM, intHandler);
     signal(SIGHUP, sliceNow);
 
-    //gstreamPipeline thePipeline("mainPipeline");
-    // slice every 15 mins
     ringPipeline.setExitVar(&ctrlCseen);
-    ringPipeline.Run();
+
+#ifdef _DEBUG
+    ringPipeline.Run(3);
+#else
+    ringPipeline.Run(60);
+#endif
 
 }
