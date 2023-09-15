@@ -174,12 +174,15 @@ protected:
         AvahiLookupResultFlags flags)
     {
         char a[AVAHI_ADDRESS_STR_MAX], *t;
-        avahi_address_snprint(a, sizeof(a), address);
-
-        if(address->proto==AVAHI_PROTO_INET)
+        if(address)
         {
-            printf("adding %s - %s\n\r",host_name, a);
-            m_servicesFound.push_back(std::pair<std::string, std::string>(host_name,a));
+            avahi_address_snprint(a, sizeof(a), address);
+
+            if(address->proto==AVAHI_PROTO_INET)
+            {
+                printf("adding %s - %s\n\r",host_name, a);
+                m_servicesFound.push_back(std::pair<std::string, std::string>(host_name,a));
+            }
         }
         m_servicesInFlux--;
     }
