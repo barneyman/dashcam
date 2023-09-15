@@ -139,8 +139,9 @@ int main()
     while(true)
     {
         //auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);
-        for(auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);theGrabber.isPopulated();filelist=theGrabber.getGrabDetails(offsetms,lengthms,id))
+        while(theGrabber.isPopulated())
         {
+            auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);
 
             if(filelist.size())
             {
@@ -158,10 +159,12 @@ int main()
                     theGrabber.updateGrabDetails(id,0,filename);
                 }
 
+                printf("**********************\n\r");
+
             }
 
         }
-        std::this_thread::sleep_for(std::chrono::minutes(10));
+        std::this_thread::sleep_for(std::chrono::minutes(1));
     }
 
 #else
