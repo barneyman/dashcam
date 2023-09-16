@@ -26,8 +26,8 @@ public:
         m_src(this,files[0].c_str()),
 #endif        
 #ifdef _USE_PANGO
-        //m_meta(this, _PANGO_SPEED | _PANGO_LONGLAG | _PANGO_UTC),
-        m_meta(this, _PANGO_LONGLAG ),
+        m_meta(this, _PANGO_SPEED | _PANGO_LONGLAG | _PANGO_UTC),
+        //m_meta(this, _PANGO_LONGLAG ),
 #endif        
         m_out(this,destination)
 
@@ -38,9 +38,12 @@ public:
         //ConnectPipeline(m_multisrc,m_out,m_meta);
 
 
-
-        ConnectPipeline(m_mixer,m_out,m_meta);
+        // connect h264
+        ConnectPipeline(m_mixer,m_meta);
+        ConnectPipeline(m_meta,m_out);
+        // connect h264
         ConnectPipeline(m_multisrc,m_mixer);
+        // connect subs
         ConnectPipeline(m_multisrc,m_meta);
 
         // need to handle subtitles turning up for the compositor
@@ -131,13 +134,14 @@ int main()
     // just stop ref count dropping out
     gstreamPipeline sentry("Sentry");
 
-    grabber theGrabber(sql);
 
     GstClockTime offsetms, lengthms;
     maria_guid id;
 
     while(!ctrlCseen)
     {
+        grabber theGrabber(sql);
+
         //auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);
         while(theGrabber.isPopulated())
         {
@@ -150,11 +154,13 @@ int main()
 
                 printf("-> %s for %f s\n\r",filename.c_str(), (float)(lengthms/1000));
 
-                if(joinVidsPipeline(filelist,
+                joinVidsPipeline jpl(filelist,
                                             filename.c_str(),
                                             offsetms*GST_MSECOND,
                                             (offsetms+lengthms)*GST_MSECOND
-                                            ).Run())
+                                            );
+                jpl.setExitVar(&ctrlCseen);
+                if(jpl.Run())
                 {
                     theGrabber.updateGrabDetails(id,0,filename);
                 }
@@ -164,7 +170,7 @@ int main()
             }
 
         }
-        std::this_thread::sleep_for(std::chrono::minutes(1));
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 
 #else

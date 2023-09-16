@@ -2,7 +2,7 @@
 #include "gstreamHelpers/myplugins/gstnmeasource.h"
 
 const char *sub_error="Subtitle Error";
-const char *span="<span foreground='white' size='small'>";
+const char *span="<span foreground='white' size='small' font_family='Courier'>";
 const char *span_end="</span>";
 
 // turns an nmea json into speed pango
@@ -18,24 +18,41 @@ public:
         char msg[PANGO_BUFFER];
         int len=0;
 
-        if(jsondata.contains("speedKMH") && jsondata.contains("bearingDeg") && jsondata.contains("satelliteCount"))
+        char speed[10], bearing[10], satCount[10];
+        if(jsondata.contains("speedKMH"))
         {
-
-            len=snprintf(msg, sizeof(msg), "%s%d km/h %.1f° %2d sats%s",
-                span,
-                jsondata["speedKMH"].get<int>(),
-                jsondata["bearingDeg"].get<float>(),
-                jsondata["satelliteCount"].get<int>(),
-                span_end);
-
-            return msg;  
+            snprintf(speed, sizeof(speed)-1,"%3d",jsondata["speedKMH"].get<int>());
+        }
+        else
+        {
+            strcpy(speed,"---");
         }
 
-        len=snprintf(msg, sizeof(msg), "%s%s%s",
+        if(jsondata.contains("bearingDeg"))
+        {
+            snprintf(bearing, sizeof(bearing)-1,"%3d",jsondata["bearingDeg"].get<int>());
+        }
+        else
+        {
+            strcpy(bearing,"---");
+        }
+
+        if(jsondata.contains("satelliteCount"))
+        {
+            snprintf(satCount, sizeof(satCount)-1,"%3d",jsondata["satelliteCount"].get<int>());
+        }
+        else
+        {
+            strcpy(satCount,"---");
+        }
+
+
+        len=snprintf(msg, sizeof(msg), "%s%s km/h %s° %s sats%s",
             span,
-            sub_error,
-            span_end
-            );
+            speed,
+            bearing,
+            satCount,
+            span_end);
 
         return msg;  
     }
