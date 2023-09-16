@@ -102,7 +102,7 @@ public:
         if(jsondata.contains("longitudeE") && jsondata.contains("latitudeN"))
         {
 
-            len=snprintf(msg, sizeof(msg), "%sLong:%.4f Lat:%.4f%s",
+            len=snprintf(msg, sizeof(msg), "%sLong %.4f Lat %.4f%s",
                 span,
                 jsondata["longitudeE"].get<float>(),
                 jsondata["latitudeN"].get<float>(),
