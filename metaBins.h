@@ -130,7 +130,7 @@ public:
     {
     }
 
-    virtual std::string TurnJsonToPango(nlohmann::json &jsondata,GstBuffer *)
+    virtual std::string TurnJsonToPango(nlohmann::json &jsondata,GstBuffer *buf)
     {
         char msg[PANGO_BUFFER];
         int len=0;
@@ -147,14 +147,17 @@ public:
             if(jsondata.contains("utcmillis"))
                 millis=jsondata["utcmillis"];
 
-            snprintf(msg,sizeof(msg)-1, "%d-%02d-%02d %02d:%02d:%02d.%03lu %s",
+            unsigned frameNumber=(unsigned)(buf->offset%30);
+
+            snprintf(msg,sizeof(msg)-1, "%d-%02d-%02d %02d:%02d:%02d.%lu:%02u %s",
                 info->tm_year+1900,
                 info->tm_mon+1,
                 info->tm_mday,
                 info->tm_hour,
                 info->tm_min,
                 info->tm_sec,
-                millis,
+                // convert to 10th
+                millis/100,frameNumber,
                 tzname[info->tm_isdst]
                 );
 
