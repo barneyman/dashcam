@@ -28,6 +28,8 @@
 
 // sudo setcap cap_net_admin=eip ./ringbuffer
 
+//#define _DEBUG_NO_SQL   // don't pollute DB while testing
+
 class ringBufferPipeline : 
     public gstreamPipeline, 
     public padProber,
@@ -140,10 +142,12 @@ public:
 
         m_chapter_open=true;
 
+#ifndef _DEBUG_NO_SQL
         m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(newFile,
                                                         m_journeyGuid,
                                                         m_currentChapterGuid,
                                                         (splitStart/GST_MSECOND)));
+#endif
 
         GST_INFO_OBJECT (m_pipeline, "Opened split file - chapter %s",boost::uuids::to_string(m_currentChapterGuid).c_str());
         GST_INFO_OBJECT (m_pipeline, "Opened split file - start %" GST_TIME_FORMAT " basetime %" GST_TIME_FORMAT "",
@@ -157,16 +161,22 @@ public:
 
     virtual void SplitMuxClosedSplit(GstClockTime splitEnd, const char*newFile)
     {
+
+#ifndef _DEBUG_NO_SQL
         m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(m_journeyGuid,
                                                         m_currentChapterGuid,
                                                         (splitEnd/GST_MSECOND)));
+#endif
 
         // and add a prune job
         // TODO use the proper time
         time_t rawtime;
         time(&rawtime);
         GstClockTime gtime=(rawtime-(86400*1))*GST_SECOND;
+
+#ifndef _DEBUG_NO_SQL
         m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(gtime));
+#endif 
 
         //m_chapter_open.unlock();
         m_chapter_open=false;
@@ -235,15 +245,18 @@ public:
     {
         // start a journey
         m_journeyGuid=boost::uuids::random_generator()();
+#ifndef _DEBUG_NO_SQL
         m_scheduler.m_taskQueue.safe_push(
             sqlWorkJobs(sqlWorkJobs::taskType::swjStartJourney,m_journeyGuid));
-
+#endif
         // run
         gstreamPipeline::Run(minutes*60);
 
+#ifndef _DEBUG_NO_SQL
         // close a journey
         m_scheduler.m_taskQueue.safe_push(
             sqlWorkJobs(sqlWorkJobs::taskType::swjEndJourney,m_journeyGuid));
+#endif
 
         m_scheduler.stop();
 
@@ -258,7 +271,9 @@ public:
         if(new_state==GST_STATE_PLAYING)
         {
             m_basetime=gstreamPipeline::GetTimeSinceEpoch();
+#ifndef _DEBUG_NO_SQL
             m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(m_journeyGuid,m_basetime));
+#endif            
         }
     }
 
