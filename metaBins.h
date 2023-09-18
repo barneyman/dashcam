@@ -258,7 +258,6 @@ public:
 
         g_object_set(pluginContainer<GstElement>::FindNamedPlugin("nmeasource"),
             "parent",parent,
-            "localtime", true,
             NULL);
 
 #ifdef USE_NMEA_QUEUE
