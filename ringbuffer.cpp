@@ -76,6 +76,16 @@ public:
 
             m_sinkBin=new gstSplitMuxOutBin(this,sliceMins*60,m_outspec.c_str());
 
+            // sort them by priority
+            std::sort(m_servicesFound.begin(),m_servicesFound.end(),
+                [](const std::tuple<std::string,std::string,std::vector<std::string>> &a,const std::tuple<std::string,std::string,std::vector<std::string>> &b){
+
+                // need priority - lazy, drunk sort
+                // TODO - fix this
+                return a<b;
+
+            });
+
             for(auto each=m_servicesFound.begin();each!=m_servicesFound.end();each++)
             {
                 // rtsp://vpnhack:8554/cam
@@ -84,7 +94,7 @@ public:
     #else
                 std::string url("rtmp://");
     #endif            
-                url+=each->second;
+                url+=std::get<1>(*each);
     #ifdef USE_RTSP
                 url+=":8554/cam";
     #else

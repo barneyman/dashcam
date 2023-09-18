@@ -20,7 +20,7 @@ protected:
     std::thread *m_browserThread=NULL;
     std::string m_service;
 
-    std::vector<std::pair<std::string,std::string>> m_servicesFound;
+    std::vector<std::tuple<std::string,std::string,std::vector<std::string>>> m_servicesFound;
 
     bool avahi_finished()
     {
@@ -181,7 +181,22 @@ protected:
             if(address->proto==AVAHI_PROTO_INET)
             {
                 printf("adding %s - %s\n\r",host_name, a);
-                m_servicesFound.push_back(std::pair<std::string, std::string>(host_name,a));
+
+                std::vector<std::string> textRecords;
+
+                // fill out the text records
+                if(txt)
+                {
+                    for(auto each=txt;each;each=each->next)
+                    {
+                        textRecords.push_back(std::string((char*)&each->text,each->size));
+                    }
+                }
+
+                std::tuple<std::string,std::string,std::vector<std::string>> newService=
+                    std::tuple<std::string,std::string,std::vector<std::string>>(host_name,a,textRecords);
+
+                m_servicesFound.push_back(newService);
             }
         }
         m_servicesInFlux--;
