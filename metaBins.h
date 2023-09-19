@@ -37,13 +37,13 @@ public:
             strcpy(bearing,"---");
         }
 
-        if(jsondata.contains("satelliteCount"))
+        if(jsondata.contains("satellitesUsed") && jsondata.contains("satellitesVisible"))
         {
-            snprintf(satCount, sizeof(satCount)-1,"%3d",jsondata["satelliteCount"].get<int>());
+            snprintf(satCount, sizeof(satCount)-1,"%2d/%2d",jsondata["satellitesUsed"].get<int>(),jsondata["satellitesVisible"].get<int>());
         }
         else
         {
-            strcpy(satCount,"---");
+            strcpy(satCount,"--/--");
         }
 
 
