@@ -127,6 +127,8 @@ RUN echo '/usr/local/lib/mariadb' > /etc/ld.so.conf.d/mariadb.conf && \
         ldconfig
 #####################
 
+# set tz
+RUN ln -sf /usr/share/zoneinfo/Australia/Melbourne /etc/localtime
 
 WORKDIR /
 
@@ -163,5 +165,7 @@ RUN apt install -y dbus avahi-daemon libavahi-client-dev libavahi-glib-dev
 
 #####################
 
+# set tz
+RUN ln -sf /usr/share/zoneinfo/Australia/Melbourne /etc/localtime
 
 WORKDIR /
