@@ -54,6 +54,12 @@ public:
             satCount,
             span_end);
 
+        if(len<0)
+        {
+            // memory oof
+            exit(1);
+        }
+
         return msg;  
     }
 };
@@ -79,6 +85,12 @@ public:
             GST_TIME_ARGS(inbuf->duration),
             span_end
             );
+
+        if(len<0)
+        {
+            // memory oof
+            exit(1);
+        }
 
         return msg;  
     }
@@ -118,6 +130,12 @@ public:
             span_end
             );
 
+        if(len<0)
+        {
+            // memory oof
+            exit(1);
+        }
+
         return msg;  
     }
 };
@@ -137,19 +155,19 @@ public:
 
         std::string output;
 
-        if(jsondata.contains("utcsecs"))
+        // setenv("TZ", "/usr/share/zoneinfo/Australia/Melbourne", 1);
+
+        if(jsondata.contains("utc-millis"))
         {
             /// oooh - we can localise!
-            time_t nowsecs=jsondata["utcsecs"];
-            struct tm *info = localtime(&nowsecs);
+            time_t nowsecs=jsondata["utc-millis"].get<time_t>()/1000;
+            time_t millis=jsondata["utc-millis"].get<time_t>()%1000;
 
-            time_t millis=0;
-            if(jsondata.contains("utcmillis"))
-                millis=jsondata["utcmillis"];
+            struct tm *info = std::localtime(&nowsecs);
 
-            unsigned frameNumber=(unsigned)(buf->offset%30);
+            //localtime(&nowsecs);
 
-            snprintf(msg,sizeof(msg)-1, "%d-%02d-%02d %02d:%02d:%02d.%lu:%02u %s",
+            snprintf(msg,sizeof(msg)-1, "%d-%02d-%02d %02d:%02d:%02d.%lu %s",
                 info->tm_year+1900,
                 info->tm_mon+1,
                 info->tm_mday,
@@ -157,7 +175,7 @@ public:
                 info->tm_min,
                 info->tm_sec,
                 // convert to 10th
-                millis/100,frameNumber,
+                millis/100,
                 tzname[info->tm_isdst]
                 );
 
@@ -180,6 +198,12 @@ public:
             output.c_str(),
             span_end
             );
+
+        if(len<0)
+        {
+            // memory oof
+            exit(1);
+        }
 
         return msg;
     }
