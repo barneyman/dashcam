@@ -13,6 +13,7 @@
 
 #define _USE_PANGO
 #define _USE_MULTI
+//#define _USE_GLIMAGE
 
 class joinVidsPipeline : public gstreamPipeline
 {
@@ -29,6 +30,9 @@ public:
         m_meta(this, _PANGO_SPEED | _PANGO_LONGLAG | _PANGO_UTC),
         //m_meta(this, _PANGO_LONGLAG ),
 #endif        
+#ifdef _USE_GLIMAGE
+        m_imageSink(this),
+#endif
         m_out(this,destination)
 
     {
@@ -40,7 +44,16 @@ public:
 
         // connect h264
         ConnectPipeline(m_mixer,m_meta);
-        ConnectPipeline(m_meta,m_out);
+#ifdef _USE_GLIMAGE
+        {
+            ConnectPipeline(m_meta,m_out,m_imageSink);
+        }
+#else
+        {
+            ConnectPipeline(m_meta,m_out);    
+        }
+#endif
+
         // connect h264
         ConnectPipeline(m_multisrc,m_mixer);
         // connect subs
@@ -79,6 +92,10 @@ protected:
 #ifdef _USE_PANGO
     gstMultiNmeaJsonToPangoRenderBin m_meta;
 #endif    
+
+#ifdef _USE_GLIMAGE
+    gstValve<gstGLImageSink> m_imageSink;
+#endif
 };
 
 
@@ -111,7 +128,7 @@ volatile bool ctrlCseen=false;
 
 void intHandler(int dummy) 
 {
-    printf("Handling ctrl-C\n\r");
+    printf("Handling ctrl-C - pls wait ...\n\r");
     ctrlCseen = true;
 }
 
@@ -167,6 +184,11 @@ int main()
 
                 printf("**********************\n\r");
 
+            }
+            else
+            {
+                printf("no file list\n\r");
+                theGrabber.updateGrabDetails(id,-1,"*** No file list");                
             }
 
         }

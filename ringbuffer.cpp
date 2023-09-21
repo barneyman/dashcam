@@ -30,6 +30,8 @@
 
 //#define _DEBUG_NO_SQL   // don't pollute DB while testing
 
+//#define _NTP_SOURCE "burner"
+
 class ringBufferPipeline : 
     public gstreamPipeline, 
     public padProber,
@@ -57,8 +59,14 @@ public:
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
 
-        // use real time
+#ifdef _NTP_SOURCE
+        UseNTPv4Clock(_NTP_SOURCE);
+#else        
+        // use real time from the system clock
         setRealtimeClock();
+#endif        
+
+
 
         char buffer[300];
         struct tm *info; 
