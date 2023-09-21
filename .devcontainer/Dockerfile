@@ -47,7 +47,8 @@ RUN apt-get -y install \
       python3.9 python3.9-dev python3-distutils python3-pip \
       libmount-dev bison flex pkg-config autotools-dev libffi-dev \
       librtmp-dev libx264-dev libsoup2.4-1 libsoup2.4-dev libpng-dev \
-      build-essential ninja-build git xvfb cmake libboost-all-dev
+      build-essential ninja-build git xvfb cmake libboost-all-dev \
+      libgl1-mesa-dev libx11-xcb-dev
 
 # nvidia gpu support
 # ENV NVIDIA_DRIVER_CAPABILITIES=all
@@ -83,8 +84,9 @@ RUN cd ./gst-build && \
     ./gst-worktree.py add gst-build-$GST_VERSION $GST_VERSION
 
 RUN cd ./gst-build/gst-build-$GST_VERSION && \
-    meson build 
-        #-Dgst-plugins-base:pango=enabled    
+    meson build \
+          -Dgst-plugins-base:pango=enabled    \
+          -Dgst-plugins-base:gl=enabled 
         # -Dintrospection=enabled \
         # -Dexamples=disabled \
         # -Dgtk_doc=disabled \
@@ -95,7 +97,6 @@ RUN cd ./gst-build/gst-build-$GST_VERSION && \
         # -Dgst-plugins-good:tests=enabled \
         # -Dgst-plugins-bad:tests=enabled \
         # -Dgst-plugins-ugly:tests=enabled \
-        # -Dgst-plugins-base:gl=enabled \
         # -Dgst-plugins-bad:nvdec=disabled \
         # -Dgi=disabled \
         # -Dpython=disabled \
@@ -107,8 +108,6 @@ RUN cd ./gst-build/gst-build-$GST_VERSION && \
 ENV LD_LIBRARY_PATH=/usr/local/lib/x86_64-linux-gnu:/usr/local/lib:${LD_LIBRARY_PATH}
 ENV GI_TYPELIB_PATH=/usr/lib/x86_64-linux-gnu/girepository-1.0:/usr/local/lib/x86_64-linux-gnu/girepository-1.0
 
-# rpi enc hardware
-RUN apt install -y gstreamer1.0-omx-generic
 # intel vaapi hw encoding 
 RUN apt install -y gstreamer1.0-vaapi
 
@@ -150,8 +149,6 @@ RUN apt install -y gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer
 
 # dev
 RUN apt install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev 
-# dev rtsp-server
-RUN apt install -y libgstrtspserver-1.0-dev
 
 RUN apt install -y libpango1.0-dev
 # ?
