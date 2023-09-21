@@ -4,6 +4,8 @@
 	"name": "C++",
 	"build": {
 		"dockerfile": "Dockerfile",
+		// remove this cache if you're not using one
+		"args": {"USE_APT_CACHE":"http://192.168.42.123:3142"},
 		"target": "gstreamer_dev"	// dev headers, no debug, quick to construct, poor debug
 		//"target": "gstreamer_debug" // gstreamer source, compiled, mariadbclient compiled, slooooow to construct, great debug
 	},

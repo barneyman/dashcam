@@ -20,6 +20,12 @@ RUN if [ "${REINSTALL_CMAKE_VERSION_FROM_SOURCE}" != "none" ]; then \
 # update
 RUN apt update && apt upgrade -y
 
+ARG USE_APT_CACHE="none"
+# use the cache
+RUN if [ "${USE_APT_CACHE}" != "none" ]; then \
+        echo 'Acquire::http { Proxy '\"${USE_APT_CACHE}\"'; };' > /etc/apt/apt.conf.d/01proxy; \
+    fi
+
 RUN apt install -y libboost-all-dev
 
 
@@ -125,7 +131,6 @@ RUN git clone https://github.com/mariadb-corporation/mariadb-connector-c && \
 
 RUN echo '/usr/local/lib/mariadb' > /etc/ld.so.conf.d/mariadb.conf && \
         ldconfig
-#####################
 
 # set tz
 RUN ln -sf /usr/share/zoneinfo/Australia/Melbourne /etc/localtime
@@ -135,6 +140,7 @@ WORKDIR /
 
 
 
+#####################
 FROM devbase as gstreamer_dev
 
 
