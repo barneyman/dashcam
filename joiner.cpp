@@ -27,8 +27,8 @@ public:
         m_src(this,files[0].c_str()),
 #endif        
 #ifdef _USE_PANGO
-        m_meta(this, _PANGO_SPEED | _PANGO_LONGLAG | _PANGO_UTC),
-        //m_meta(this, _PANGO_LONGLAG ),
+        //m_meta(this, _PANGO_SPEED | _PANGO_LONGLAG | _PANGO_UTC),
+        m_meta(this, _PANGO_UTC ),
 #endif        
 #ifdef _USE_GLIMAGE
         m_imageSink(this),
@@ -194,16 +194,16 @@ int main()
                                             );
                 if(!jpl)
                 {
-                    printf("joinVidsPipeline ctor failed");
+                    printf("joinVidsPipeline ctor failed\n\r");
                     theGrabber.updateGrabDetails(id,-2,"*** joinVidsPipeline ctor failed");
 
                 }
                 else
                 {
-                jpl.setExitVar(&ctrlCseen);
-                if(jpl.Run())
-                {
-                    theGrabber.updateGrabDetails(id,0,filename);
+                    jpl.setExitVar(&ctrlCseen);
+                    if(jpl.Run())
+                    {
+                        theGrabber.updateGrabDetails(id,0,filename);
                     }
                 }
 
