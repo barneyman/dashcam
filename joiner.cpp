@@ -36,6 +36,12 @@ public:
         m_out(this,destination)
 
     {
+
+        if(m_multisrc.fatalError())
+        {
+            m_fatal=true;
+            return;
+        }
 #ifdef _USE_PANGO
 #ifdef _USE_MULTI        
 
@@ -79,6 +85,8 @@ public:
         releaseMyRequestedPads();
     }
 
+    operator bool() { return !m_fatal; }
+
 protected:
 
 #ifdef _USE_MULTI        
@@ -96,6 +104,8 @@ protected:
 #ifdef _USE_GLIMAGE
     gstValve<gstGLImageSink> m_imageSink;
 #endif
+
+    bool m_fatal=false;
 };
 
 
@@ -148,6 +158,12 @@ int main()
 
     mariaDBconnection sql("debian","dashcam","dashcam","dashcam");
 
+    if(!sql)
+    {
+        printf("SQL error: %s\n\r",sql.error());
+        exit(1);
+    }
+
     // just stop ref count dropping out
     gstreamPipeline sentry("Sentry");
 
@@ -176,10 +192,19 @@ int main()
                                             offsetms*GST_MSECOND,
                                             (offsetms+lengthms)*GST_MSECOND
                                             );
+                if(!jpl)
+                {
+                    printf("joinVidsPipeline ctor failed");
+                    theGrabber.updateGrabDetails(id,-2,"*** joinVidsPipeline ctor failed");
+
+                }
+                else
+                {
                 jpl.setExitVar(&ctrlCseen);
                 if(jpl.Run())
                 {
                     theGrabber.updateGrabDetails(id,0,filename);
+                    }
                 }
 
                 printf("**********************\n\r");
