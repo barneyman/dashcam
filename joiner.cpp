@@ -11,7 +11,6 @@
 #include <dirent.h> 
 
 
-#define _USE_PANGO
 #define _USE_MULTI
 //#define _USE_GLIMAGE
 
@@ -26,10 +25,8 @@ public:
 #else        
         m_src(this,files[0].c_str()),
 #endif        
-#ifdef _USE_PANGO
         //m_meta(this, _PANGO_SPEED | _PANGO_LONGLAG | _PANGO_UTC),
-        m_meta(this, _PANGO_UTC ),
-#endif        
+        m_meta(this, 0 ),
 #ifdef _USE_GLIMAGE
         m_imageSink(this),
 #endif
@@ -42,7 +39,6 @@ public:
             m_fatal=true;
             return;
         }
-#ifdef _USE_PANGO
 #ifdef _USE_MULTI        
 
         //ConnectPipeline(m_multisrc,m_out,m_meta);
@@ -54,30 +50,20 @@ public:
         {
             ConnectPipeline(m_meta,m_out,m_imageSink);
         }
-#else
+#else // _USE_GLIMAGE
         {
             ConnectPipeline(m_meta,m_out);    
         }
-#endif
+#endif // _USE_GLIMAGE
 
         // connect h264
         ConnectPipeline(m_multisrc,m_mixer);
         // connect subs
         ConnectPipeline(m_multisrc,m_meta);
 
-        // need to handle subtitles turning up for the compositor
-        // ConnectPipeline(m_multisrc,m_mixer);
-        // ConnectPipeline(m_mixer,m_out,m_meta);
-#else
+#else // _USE_MULTI
         ConnectPipeline(m_src,m_out,m_meta);
-#endif        
-#else
-#ifdef _USE_MULTI        
-        ConnectPipeline(m_multisrc,m_out);
-#else
-        ConnectPipeline(m_src,m_out);
-#endif        
-#endif        
+#endif // _USE_MULTI
     }
 
     ~joinVidsPipeline()
@@ -97,9 +83,7 @@ protected:
 #endif    
 
     gstMP4OutBin m_out;
-#ifdef _USE_PANGO
     gstMultiNmeaJsonToPangoRenderBin m_meta;
-#endif    
 
 #ifdef _USE_GLIMAGE
     gstValve<gstGLImageSink> m_imageSink;
