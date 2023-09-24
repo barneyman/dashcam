@@ -10,8 +10,7 @@
 
 #include <dirent.h> 
 
-
-#define _USE_MULTI
+#define USE_PANGO 0 //_PANGO_SPEED | _PANGO_LONGLAG | _PANGO_UTC
 //#define _USE_GLIMAGE
 
 class joinVidsPipeline : public gstreamPipeline
@@ -19,14 +18,9 @@ class joinVidsPipeline : public gstreamPipeline
 public:
     joinVidsPipeline(std::vector<std::string> &files, const char*destination,GstClockTime offset=GST_CLOCK_TIME_NONE, GstClockTime runtime=GST_CLOCK_TIME_NONE):
         gstreamPipeline("joinVidsPipeline"),
-#ifdef _USE_MULTI        
         m_multisrc(this,files,offset,runtime),
-        m_mixer(this),
-#else        
-        m_src(this,files[0].c_str()),
-#endif        
-        //m_meta(this, _PANGO_SPEED | _PANGO_LONGLAG | _PANGO_UTC),
-        m_meta(this, 0 ),
+        m_mixer(this, false),
+        m_meta(this, USE_PANGO ),
 #ifdef _USE_GLIMAGE
         m_imageSink(this),
 #endif
@@ -39,9 +33,6 @@ public:
             m_fatal=true;
             return;
         }
-#ifdef _USE_MULTI        
-
-        //ConnectPipeline(m_multisrc,m_out,m_meta);
 
 
         // connect h264
@@ -53,6 +44,7 @@ public:
 #else // _USE_GLIMAGE
         {
             ConnectPipeline(m_meta,m_out);    
+            DumpGraph("h264-2");
         }
 #endif // _USE_GLIMAGE
 
@@ -61,9 +53,6 @@ public:
         // connect subs
         ConnectPipeline(m_multisrc,m_meta);
 
-#else // _USE_MULTI
-        ConnectPipeline(m_src,m_out,m_meta);
-#endif // _USE_MULTI
     }
 
     ~joinVidsPipeline()
@@ -75,12 +64,8 @@ public:
 
 protected:
 
-#ifdef _USE_MULTI        
     gstMP4DemuxDecodeSparseBin m_multisrc;
     gstVideoMixerBin m_mixer;
-#else    
-    gstMP4DemuxDecodeBin m_src;
-#endif    
 
     gstMP4OutBin m_out;
     gstMultiNmeaJsonToPangoRenderBin m_meta;
@@ -207,11 +192,7 @@ int main()
 #else
 
 
-#ifdef _USE_MULTI        
     std::vector<std::string> files=collectFiles("/vids/");
-#else
-    std::vector<std::string> files={"/vids/2023-03-060828Z_00000.mp4"};
-#endif
 
     if(!files.size())
     {
