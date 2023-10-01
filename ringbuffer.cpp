@@ -117,7 +117,11 @@ public:
             m_sourceBins=new multiRemoteSourceBin<rtmpSourceBin>(this,urls,"video/x-h264,stream-format=(string)avc");
     #endif
 
-            m_fatal=buildPipeline();
+            m_fatal=!buildPipeline();
+        }
+        else
+        {
+            m_fatal=true;
         }
     }
 
@@ -261,6 +265,10 @@ public:
     
     void Run(unsigned minutes=0)
     {
+        if(m_fatal)
+        {
+            return;
+        }
         // start a journey
         m_journeyGuid=boost::uuids::random_generator()();
 #ifndef _DEBUG_NO_SQL

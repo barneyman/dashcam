@@ -9,3 +9,6 @@ rtsp-srv
 joiner
 **/*.deb
 *-amd64
+.debpkg-server/usr/**
+launch/*
+**/*.map
