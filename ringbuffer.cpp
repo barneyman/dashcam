@@ -48,6 +48,7 @@ public:
         m_browserDone(false),
         m_fatal(false),
         m_nmea(this),
+        m_mq(this),
         padProber(this),
         m_sql("debian","dashcam","dashcam","dashcam")
     {
@@ -65,8 +66,6 @@ public:
         // use real time from the system clock
         setRealtimeClock();
 #endif        
-
-
 
         char buffer[300];
         struct tm *info; 
@@ -138,11 +137,8 @@ public:
     bool buildPipeline()
     {
 
-        bool linked=(ConnectPipeline(m_nmea,*m_sinkBin)==0);
-        linked=(ConnectPipeline(*m_sourceBins,*m_sinkBin)==0);
-
-        // now set up the pad block - the RTSP takes some time to start playing
-        // if we send subs before it the runtime gets bent and join fails with decreasing timestamps
+        bool linked=(ConnectPipeline(m_nmea,*m_sinkBin,m_mq)==0);
+        linked=(ConnectPipeline(*m_sourceBins,*m_sinkBin,m_mq)==0);
 
         return linked;
     }
@@ -326,7 +322,7 @@ protected:
     sqlWorkerThread<sqlWorkJobs> m_scheduler;
     boost::uuids::uuid m_journeyGuid, m_currentChapterGuid;
     GstClockTime m_basetime;
-
+    gstMultiQueueBin m_mq;
     gstNmeaToSubs m_nmea;
 };
 
@@ -339,7 +335,7 @@ void intHandler(int dummy)
     ctrlCseen = true;
 }
 
-//#define _DEBUG
+#define _DEBUG
 
 #ifdef _DEBUG
 ringBufferPipeline ringPipeline("/vids",1);
@@ -363,7 +359,7 @@ int main()
 #ifdef _DEBUG
     ringPipeline.Run(3);
 #else
-    ringPipeline.Run(60);
+    ringPipeline.Run();
 #endif
 
 }
