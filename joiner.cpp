@@ -10,7 +10,7 @@
 
 #include <dirent.h> 
 
-#define USE_PANGO 0 //_PANGO_SPEED | _PANGO_LONGLAG | _PANGO_UTC
+#define USE_PANGO _PANGO_SPEED | _PANGO_LONGLAG | _PANGO_UTC
 //#define _USE_GLIMAGE
 
 class joinVidsPipeline : public gstreamPipeline
@@ -50,8 +50,15 @@ public:
 
         // connect h264
         ConnectPipeline(m_multisrc,m_mixer);
-        // connect subs
-        ConnectPipeline(m_multisrc,m_meta);
+        if(m_multisrc.streamInfo.numSubtitleStreams())
+        {
+            // connect subs
+            ConnectPipeline(m_multisrc,m_meta);
+        }
+        else
+        {
+            m_meta.turnOffWaitText("no meta");
+        }
 
     }
 
