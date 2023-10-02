@@ -1,8 +1,4 @@
 #!/bin/sh
 
-gpsd -D 1 -N -n /dev/ttyS0
+gpsd -G -D 1 -n /dev/ttyS0 /dev/pps0
 chronyd -d -s
-
-
-
-
