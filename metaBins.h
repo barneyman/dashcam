@@ -267,14 +267,10 @@ protected:
 
 };
 
-//#define USE_NMEA_QUEUE
 class gstNmeaToSubs : public gstreamBin
 {
 public:
-    gstNmeaToSubs(gstreamPipeline *parent):
-#ifdef USE_NMEA_QUEUE    
-        m_queue(this,"q",2),
-#endif        
+    gstNmeaToSubs(gstreamPipeline *parent, unsigned framerate=30):
         gstreamBin("nmeasourcebin", parent)
     {
         gst_nmeasource_registerRunTimePlugin();
@@ -284,15 +280,12 @@ public:
             "parent",parent,
             NULL);
 
-#ifdef USE_NMEA_QUEUE
-        gst_element_link_many(   pluginContainer<GstElement>::FindNamedPlugin("nmeasource"),
-                            pluginContainer<GstElement>::FindNamedPlugin(m_queue),        
-                            NULL);        
+        g_object_set(pluginContainer<GstElement>::FindNamedPlugin("nmeasource"),
+            "frame-rate",framerate,
+            NULL);
 
-        AddGhostPads(NULL,m_queue);
-#else
         AddGhostPads(NULL,FindNamedPlugin("nmeasource"));
-#endif
+
         setBinFlags(GST_ELEMENT_FLAG_SOURCE);
 
     }
@@ -300,7 +293,4 @@ public:
     
 
 protected:
-#ifdef USE_NMEA_QUEUE
-    gstQueueTime m_queue;
-#endif
 };
