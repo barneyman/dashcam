@@ -12,17 +12,27 @@
 
 #define USE_PANGO _PANGO_SPEED | _PANGO_LONGLAG | _PANGO_UTC
 //#define _USE_GLIMAGE
+#define _USE_NAMED_VIDEO
+
 
 class joinVidsPipeline : public gstreamPipeline
 {
 public:
-    joinVidsPipeline(std::vector<std::string> &files, const char*destination,GstClockTime offset=GST_CLOCK_TIME_NONE, GstClockTime runtime=GST_CLOCK_TIME_NONE):
+    joinVidsPipeline(std::vector<std::string> &files, const char*destination,
+#ifdef _USE_NAMED_VIDEO    
+                        const char* name,
+#endif
+                        GstClockTime offset=GST_CLOCK_TIME_NONE, 
+                        GstClockTime runtime=GST_CLOCK_TIME_NONE):
         gstreamPipeline("joinVidsPipeline"),
         m_multisrc(this,files,offset,runtime),
         m_mixer(this, false),
         m_meta(this, USE_PANGO ),
 #ifdef _USE_GLIMAGE
         m_imageSink(this),
+#endif
+#ifdef _USE_NAMED_VIDEO    
+        m_name(this,name,"debugName",4),
 #endif
         m_out(this,destination)
 
@@ -43,7 +53,12 @@ public:
         }
 #else // _USE_GLIMAGE
         {
-            ConnectPipeline(m_meta,m_out);    
+            ConnectPipeline(m_meta,
+                            m_out
+#ifdef _USE_NAMED_VIDEO    
+                            ,m_name
+#endif
+                            );    
             DumpGraph("h264-2");
         }
 #endif // _USE_GLIMAGE
@@ -79,6 +94,9 @@ protected:
 
 #ifdef _USE_GLIMAGE
     gstValve<gstGLImageSink> m_imageSink;
+#endif
+#ifdef _USE_NAMED_VIDEO    
+    gstNamedVideo m_name;
 #endif
 
     bool m_fatal=false;
@@ -155,7 +173,8 @@ int main()
 
         while(theGrabber.isPopulated() && !ctrlCseen)
         {
-            auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);
+            maria_timestamp timein, timeout;
+            auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id,timein, timeout);
 
             if(filelist.size())
             {
@@ -166,6 +185,9 @@ int main()
 
                 joinVidsPipeline jpl(filelist,
                                             filename.c_str(),
+#ifdef _USE_NAMED_VIDEO
+                                            (timein.to_string()+std::string("-")+timeout.to_string()).c_str(),
+#endif
                                             offsetms*GST_MSECOND,
                                             (offsetms+lengthms)*GST_MSECOND
                                             );

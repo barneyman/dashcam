@@ -52,9 +52,27 @@ public:
 
     }
 
-    void operator =(const maria_timestamp &other)
+    maria_timestamp operator =(const maria_timestamp &other)
     {
         memcpy(&m_now,&other.m_now,sizeof(m_now));
+        return *this;
+    }
+
+    std::string to_string()
+    {
+        char bigenough[255];
+
+        snprintf(bigenough,sizeof(bigenough)-1,"%04d:%02d:%02dT%02d:%02d:%02d.%03lu",
+                                                    m_now.year,
+                                                    m_now.month,
+                                                    m_now.day,
+                                                    m_now.hour,
+                                                    m_now.minute,
+                                                    m_now.second,
+                                                    m_now.second_part/1000
+                                                    );
+
+        return std::string(bigenough);
     }
 
     MYSQL_TIME m_now;

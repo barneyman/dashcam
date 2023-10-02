@@ -25,7 +25,7 @@ public:
         return m_grabsToGet.size()>0; 
     }
 
-    std::vector<std::string> getGrabDetails(GstClockTime &offsetms,GstClockTime &lengthms, maria_guid &id)
+    std::vector<std::string> getGrabDetails(GstClockTime &offsetms,GstClockTime &lengthms, maria_guid &id, maria_timestamp &timein, maria_timestamp &timeout)
     {
         std::vector<std::string> m_chapters;
 
@@ -38,8 +38,8 @@ public:
             mariaBinding<chapter_list,3> fetchChapterParams;
             mySQLprepared<chapter_list,3> callFetchChapter(m_sql, "CALL sp_get_chapter_list(?,?)");
 
-            fetchChapterParams.m_timeIn=std::get<1>(firstGrab);
-            fetchChapterParams.m_timeOut=std::get<2>(firstGrab);
+            timein=fetchChapterParams.m_timeIn=std::get<1>(firstGrab);
+            timeout=fetchChapterParams.m_timeOut=std::get<2>(firstGrab);
 
             if(callFetchChapter.bind(fetchChapterParams))
             {
