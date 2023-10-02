@@ -11,6 +11,7 @@ class grabber
 protected:
 
     mariaDBconnection *m_sql;
+    size_t m_originalSize=0;
 
 public:
     grabber(mariaDBconnection &sql)
@@ -53,7 +54,7 @@ public:
                         offsetms=fetchChapterParams.m_offsetms;
                         lengthms=fetchChapterParams.m_lengthms;
                     }
-                    printf("\t%s\n\r",fetchChapterParams.m_grabfilename);
+                    //printf("\t%s\n\r",fetchChapterParams.m_grabfilename);
                 }))
                 {
                 }
@@ -100,6 +101,8 @@ public:
 
     }
 
+    size_t size() { return m_originalSize; }
+
 protected:
     void fetchGrabs()
     {
@@ -117,6 +120,7 @@ protected:
             {
             }
         }
+        m_originalSize=m_grabsToGet.size();
     }  
 
     std::queue<std::tuple<maria_guid,maria_timestamp,maria_timestamp>> m_grabsToGet;

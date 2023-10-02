@@ -151,8 +151,9 @@ int main()
     {
         grabber theGrabber(sql);
 
-        //auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);
-        while(theGrabber.isPopulated())
+        unsigned long count=0;
+
+        while(theGrabber.isPopulated() && !ctrlCseen)
         {
             auto filelist=theGrabber.getGrabDetails(offsetms,lengthms,id);
 
@@ -161,7 +162,7 @@ int main()
 
                 std::string filename="/vids/grabs/"+id.to_string()+".mp4";
 
-                printf("-> %s for %f s\n\r",filename.c_str(), (float)(lengthms/1000));
+                printf("%lu/%lu : %lu files -> %s for %f s\n\r",++count,theGrabber.size(),filelist.size(),filename.c_str(), (float)(lengthms/1000));
 
                 joinVidsPipeline jpl(filelist,
                                             filename.c_str(),
@@ -181,6 +182,11 @@ int main()
                     {
                         theGrabber.updateGrabDetails(id,0,filename);
                     }
+                    else
+                    {
+                        theGrabber.updateGrabDetails(id,-3,"Run error");
+                    }
+
                 }
 
                 printf("**********************\n\r");
