@@ -1,4 +1,6 @@
-FROM mcr.microsoft.com/devcontainers/cpp:debian-11 as devbase
+#FROM mcr.microsoft.com/devcontainers/cpp:debian-11 as devbase
+#FROM debian:bullseye-slim as devbase
+FROM debian as devbase
 
 ARG REINSTALL_CMAKE_VERSION_FROM_SOURCE="none"
 
@@ -44,7 +46,7 @@ WORKDIR /gstreamer
 
 ENV DEBIAN_FRONTEND="noninteractive"
 RUN apt-get -y install \
-      python3.9 python3.9-dev python3-distutils python3-pip \
+      python3 python3-dev python3-distutils python3-pip \
       libmount-dev bison flex pkg-config autotools-dev libffi-dev \
       librtmp-dev libx264-dev libsoup2.4-1 libsoup2.4-dev libpng-dev \
       build-essential ninja-build git xvfb cmake libboost-all-dev \
@@ -116,6 +118,9 @@ RUN apt install -y libgps-dev
 
 # avahi
 RUN apt install -y dbus avahi-daemon libavahi-client-dev libavahi-glib-dev 
+
+# openssl
+RUN apt install libssl-dev
 
 # sql dev
 #RUN apt install -y libmariadb-dev
