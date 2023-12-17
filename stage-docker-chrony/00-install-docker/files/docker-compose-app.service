@@ -1,0 +1,15 @@
+[Unit]
+Description=Docker Compose Application Service
+Requires=docker.service
+After=docker.service
+ConditionPathExists=!/var/firstboot/firstbootdone
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/var/firstboot
+ExecStart=/var/firstboot/firstboot.sh
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
