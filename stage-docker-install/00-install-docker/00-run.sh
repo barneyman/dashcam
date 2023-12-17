@@ -1,8 +1,6 @@
 #!/bin/bash -e
 
 mkdir -p ${ROOTFS_DIR}/var/firstboot
-docker pull ghcr.io/barneyman/gpsd-chrony-ntp
-docker save ghcr.io/barneyman/gpsd-chrony-ntp | gzip > ${ROOTFS_DIR}/var/firstboot/1.tar.gz
 
 #cp files/docker-compose.yml ${ROOTFS_DIR}/var/firstboot/
 cp files/docker-compose-app.service ${ROOTFS_DIR}/etc/systemd/system/
