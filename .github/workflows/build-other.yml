@@ -131,8 +131,8 @@ jobs:
           docker pull --platform=linux/arm64 ghcr.io/barneyman/gpsd-chrony-ntp
           docker save ghcr.io/barneyman/gpsd-chrony-ntp | gzip --best > stage-docker-chrony/00-seed-chrony/files/1.tar.gz
 
-#          docker pull --platform=linux/arm64 ghcr.io/barneyman/rtsp
-#          docker save ghcr.io/barneyman/rtsp | gzip --best > stage-docker-rtsp/00-seed-rtsp/files/1.tar.gz
+          docker pull --platform=linux/arm64 ghcr.io/barneyman/rtsp
+          docker save ghcr.io/barneyman/rtsp | gzip --best > stage-docker-rtsp/00-seed-rtsp/files/1.tar.gz
 
       - uses: usimd/pi-gen-action@v1
         id: pibuild
@@ -186,7 +186,7 @@ jobs:
     
       - uses: actions/upload-artifact@v3
         with:
-          name: pi-gen-image-${{ github.run_number }}
+          name: pi-dashcam-images-${{ github.run_number }}
           path: pi-gen/deploy/*.xz
           retention-days: 3
 
