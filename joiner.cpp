@@ -110,7 +110,7 @@ std::vector<std::string> collectFiles(const char*dirname)
     DIR *d;
     struct dirent *dir;
     d = opendir(dirname);
-    if (d) {
+    if (d != nullptr) {
         while ((dir = readdir(d)) != NULL) {
             //printf("%s\n", dir->d_name);
             if(dir->d_type == DT_REG)
