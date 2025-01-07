@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/cpp:debian-11 as devbase
+FROM mcr.microsoft.com/devcontainers/cpp:debian-11 AS devbase
 
 ARG REINSTALL_CMAKE_VERSION_FROM_SOURCE="none"
 
