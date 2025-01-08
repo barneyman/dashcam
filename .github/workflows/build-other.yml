@@ -1,4 +1,4 @@
-name: Package
+name: Build Docker images, each OS image, seed OS images
 on:
   push:
     branches: [ main ]
@@ -6,6 +6,7 @@ on:
     paths:
       - 'buildx/other/**'
       - '.github/workflows/build-other.yml'
+      - 'stage*/**'
 
   pull_request:
     types: [opened, synchronize, reopened]
@@ -24,15 +25,15 @@ jobs:
         with:
           submodules: 'recursive'      
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+  
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}        
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
 
       - name: Build and push chrony
         uses: docker/build-push-action@v4
@@ -117,3 +118,77 @@ jobs:
 
       # need dregsy 
       # need hostapd/dnsmasq
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}        
+
+      - name: pull_images
+        run: |
+          docker pull --platform=linux/arm64 ghcr.io/barneyman/gpsd-chrony-ntp
+          docker save ghcr.io/barneyman/gpsd-chrony-ntp | gzip --best > stage-docker-chrony/00-seed-chrony/files/1.tar.gz
+
+          docker pull --platform=linux/arm64 ghcr.io/barneyman/rtsp
+          docker save ghcr.io/barneyman/rtsp | gzip --best > stage-docker-rtsp/00-seed-rtsp/files/1.tar.gz
+
+          ls /etc
+
+      - uses: usimd/pi-gen-action@v1
+        id: pibuild
+        with:
+          compression: xz
+          compression-level: 9
+          enable-noobs: false
+          export-last-stage-only: true
+        # Host name of the image.
+          hostname: dashcam
+          # Final image name.
+          image-name: 'dashcam-${{ github.run_number }}'
+
+          # Default keyboard keymap.
+          keyboard-keymap: us
+
+          # Default keyboard layout.
+          keyboard-layout: English (US)
+
+          # Default locale of the system image.
+          locale: en_AU.UTF-8
+
+          # Password of the intial user account, locked if empty.
+          password: '!raspberry'
+
+          verbose-output: true
+
+          # Release version of pi-gen to use. This can both be a branch or tag name known in 
+          # the pi-gen repository.
+          pi-gen-version: arm64
+
+          # List of stage name to execute in given order. Relative and absolute paths to 
+          # custom stage directories are allowed here. Note that by default pi-gen exports 
+          # images in stage2 (lite), stage4 and stage5. You probably want to hook in custom 
+          # stages before one of the exported stages. Otherwise, the action will make sure 
+          # any custom stage will include an image export directive.
+          stage-list: stage0 stage1 stage2 ./stage-docker-install ./stage-docker-chrony
+
+          # Use qcow2 images to reduce space and runtime requirements. _WARNING_: this is 
+          # broken on recent versions of `pi-gen` and destined to be removed entirely (see 
+          # https://github.com/RPi-Distro/pi-gen/pull/648).
+          use-qcow2: 0
+
+          # Name of the initial user account.
+          username: pi
+
+          # Wifi country code of default network to connect to.
+          wpa-country: 'AU'
+
+          disable-first-boot-user-rename: 1
+    
+      - uses: actions/upload-artifact@v3
+        with:
+          name: pi-dashcam-images-${{ github.run_number }}
+          path: pi-gen/deploy/*.xz
+          retention-days: 3
+

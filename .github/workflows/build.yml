@@ -1,4 +1,4 @@
-name: Compile and Package
+name: Compile and Package into Debian
 on:
   push:
     branches: [ main ]
@@ -6,6 +6,7 @@ on:
     paths-ignore:
       - 'buildx/other/**'
       - '.github/workflows/build-other.yml'
+      - 'stage*/**'
 
   pull_request:
     types: [opened, synchronize, reopened]
