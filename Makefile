@@ -83,3 +83,11 @@ package_apps:
 	fakeroot dpkg-deb --build .debpkg-server
 	mv .debpkg-server.deb ./ringbuffer-$(ARCH).deb
 
+
+# intended for local development
+docker_all: docker_sql 
+
+docker_sql: 
+#  exploit 'each line runs in its own sh` to not need pushd and popd
+	cd buildx/other/mysql && docker build --build-arg BUILDFROM=mysql --build-arg ROOTPWD=password -f Dockerfile --tag debug/dashcam-sql .
+
