@@ -1,19 +1,16 @@
-FROM balenalib/raspberry-pi:bullseye-run-20230712
+FROM bluenviron/mediamtx:latest-rpi
+
+
 RUN apt update
-RUN apt install -y avahi-daemon wget libcamera0 libfreetype6 
+RUN apt install -y avahi-daemon
+
+# dashcam service
 COPY bjf.service /etc/avahi/services/
 
-RUN update-rc.d avahi-daemon defaults && update-rc.d avahi-daemon defaults
+# disable dbus
+RUN sed -i 's/.*enable-dbus=.*/enable-dbus=no/' /etc/avahi/avahi-daemon.conf
 
-ARG TARGETARCH
-ARG TARGETVARIANT
+COPY mediamtx.yml /mediamtx.yml
+COPY start.sh .
 
-WORKDIR /app
-
-RUN wget https://github.com/bluenviron/mediamtx/releases/download/v1.0.1/mediamtx_v1.0.1_linux_$TARGETARCH$TARGETVARIANT.tar.gz && \
-        tar -xvzf *.gz
-
-COPY mediamtx.yml .
-
-CMD ["./mediamtx"]
-
+ENTRYPOINT ["sh", "./start.sh"]
