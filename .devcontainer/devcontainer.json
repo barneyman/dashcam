@@ -20,14 +20,18 @@
 				"ms-vscode.makefile-tools",
 				"github.vscode-github-actions",
 				"ms-vscode.cpptools-extension-pack",
-				"me-dutour-mathieu.vscode-github-actions"
+				"me-dutour-mathieu.vscode-github-actions",
+				"cweijan.dbclient-jdbc",
+				"ms-azuretools.vscode-docker",
+				"cweijan.vscode-mysql-client2"
 			]
 
 		}
 	},
 	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
-
+	"features": {
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
