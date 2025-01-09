@@ -1,5 +1,5 @@
 # breadcrumb https://github.com/docker/buildx/issues/574
-ARG BUILDFROM=mysql
+ARG BUILDFROM=mysql:8.0.40-bookworm
 FROM ${BUILDFROM}
 
 ARG ROOTPWD
