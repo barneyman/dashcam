@@ -119,19 +119,18 @@ jobs:
 
       - name: fetch
         if: env.fetchassets==''
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.8
         with:
           path: ./
 
-      - name: Safe download workflow artifact
+      - name: fetch
         if: env.fetchassets!=''
-        uses: Legit-Labs/action-download-artifact@v2.18.0
+        uses: actions/download-artifact@v4.1.8
         with:
-          workflow: build.yml
-          path: .
-          run_number: ${{ env.fetchassets }}  
-          workflow_conclusion: failure
-        
+          path: ./
+          run_id: ${{ env.fetchassets }} 
+  
+     
       - name: tree
         run: |
           tree
