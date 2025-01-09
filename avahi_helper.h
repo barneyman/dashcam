@@ -77,7 +77,14 @@ public:
                 &avahiError
             );
 
-        const char *err=avahi_strerror(avahiError);
+        if(avahiError)
+        {
+            const char *err=avahi_strerror(avahiError);
+            printf("Browsing failed '%s'", err );
+            return;
+        }
+
+        
 
         m_browser=avahi_service_browser_new(
             m_avahiClient,
