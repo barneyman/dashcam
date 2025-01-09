@@ -44,8 +44,10 @@
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	"remoteUser": "root",
 
+	
+
 	//"runArgs": ["--device=/dev/dri/card0","--device=/dev/dri/renderD128", "--network=host", "-v","/home/pi/source/bjf/dashcam/vids:/vids", "--cap-add=cap_net_admin"]
 	//"runArgs": ["--network=host", "-v","${localWorkspaceFolder}/vids:/vids", "--cap-add=cap_net_admin", "-v","/dev/fb0:/dev/fb0"]
-	"runArgs": ["--network=host", "--privileged","-e","DISPLAY=debian:0", "-v","${localWorkspaceFolder}/vids:/vids"]
+	"runArgs": ["--network=host", "--privileged","-e","DISPLAY=debian:0", "-v","${localWorkspaceFolder}/vids:/vids", "-v","/run/dbus:/run/dbus"]
 
 }

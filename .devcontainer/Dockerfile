@@ -114,8 +114,8 @@ RUN apt install -y gstreamer1.0-vaapi
 # gpsd dev
 RUN apt install -y libgps-dev
 
-# avahi
-RUN apt install -y dbus avahi-daemon libavahi-client-dev libavahi-glib-dev 
+# avahi client
+RUN apt install -y libavahi-client-dev libavahi-glib-dev 
 
 # openssl
 RUN apt install libssl-dev
@@ -166,8 +166,8 @@ RUN apt install -y libmariadb-dev
 # gpsd dev
 RUN apt install -y libgps-dev
 
-# avahi
-RUN apt install -y dbus avahi-daemon libavahi-client-dev libavahi-glib-dev 
+# avahi client
+RUN apt install -y dbus libavahi-client-dev libavahi-glib-dev 
 
 #####################
 
