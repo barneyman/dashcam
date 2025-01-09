@@ -94,8 +94,8 @@ docker_sql:
 docker_sql_run:
 	docker compose -f buildx/other/mysql/compose.yml up
 
-docker_rtsp:
+docker_rtsp: docker_sql
 	cd buildx/other/rtsp-simple-server && docker build -f Dockerfile --tag debug/dashcam-rtsp .
 
-docker_rtsp_run:
+docker_rtsp_run: docker_rtsp
 	docker compose -f buildx/other/rtsp-simple-server/compose.yml up
