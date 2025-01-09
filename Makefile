@@ -85,9 +85,11 @@ package_apps:
 
 
 # intended for local development
-docker_all: docker_sql 
+docker_all: docker_sql docker_rtsp
 
 docker_sql: 
 #  exploit 'each line runs in its own sh` to not need pushd and popd
 	cd buildx/other/mysql && docker build --build-arg BUILDFROM=mysql --build-arg ROOTPWD=password -f Dockerfile --tag debug/dashcam-sql .
 
+docker_rtsp:
+	cd buildx/other/rtsp-simple-server && docker build -f Dockerfile --tag debug/dashcam-rtsp .
