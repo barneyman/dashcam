@@ -100,7 +100,7 @@ jobs:
 
       - name: artifact
         if: env.fetchassets==''
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.dockerarch }}.deb
           path: |

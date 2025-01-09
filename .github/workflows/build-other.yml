@@ -186,7 +186,7 @@ jobs:
 
           disable-first-boot-user-rename: 1
     
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: pi-dashcam-images-${{ github.run_number }}
           path: pi-gen/deploy/*.xz
