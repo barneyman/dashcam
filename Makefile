@@ -91,5 +91,11 @@ docker_sql:
 #  exploit 'each line runs in its own sh` to not need pushd and popd
 	cd buildx/other/mysql && docker build --build-arg BUILDFROM=mysql --build-arg ROOTPWD=password -f Dockerfile --tag debug/dashcam-sql .
 
+docker_sql_run:
+	docker compose -f buildx/other/mysql/compose.yml up
+
 docker_rtsp:
 	cd buildx/other/rtsp-simple-server && docker build -f Dockerfile --tag debug/dashcam-rtsp .
+
+docker_rtsp_run:
+	docker compose -f buildx/other/rtsp-simple-server/compose.yml up
