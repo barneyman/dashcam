@@ -105,7 +105,7 @@ void testgrabs(mariaDBconnection &m_sql)
 int main()
 {
 
-    mariaDBconnection sql("debian","dashcam","dashcam","dashcam");
+    mariaDBconnection sql("debian12","dashcam","dashcam","dashcam");
 
     if(!sql.valid())
     {

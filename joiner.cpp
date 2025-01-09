@@ -150,7 +150,7 @@ int main()
 
 #ifdef USE_SQL
 
-    mariaDBconnection sql("debian","dashcam","dashcam","dashcam");
+    mariaDBconnection sql("debian12","dashcam","dashcam","dashcam");
 
     if(!sql)
     {

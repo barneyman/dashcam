@@ -98,7 +98,7 @@ jobs:
             unstable
           build-args: |
             ROOTPWD=${{ env.ROOTPWD }}
-            BUILDFROM=mysql
+            BUILDFROM=mysql:8.0.40-bookworm
 
 
 

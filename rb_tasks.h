@@ -117,7 +117,7 @@ protected:
 
 public:
     sqlWorkerThread():
-        m_sql("debian","dashcam","dashcam","dashcam")
+        m_sql("debian12","dashcam","dashcam","dashcam")
     {
 
     }

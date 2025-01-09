@@ -50,7 +50,7 @@ public:
         m_nmea(this),
         m_mq(this),
         padProber(this),
-        m_sql("debian","dashcam","dashcam","dashcam")
+        m_sql("debian12","dashcam","dashcam","dashcam")
     {
         // use NTP clock
         //UseNTPv4Clock();
