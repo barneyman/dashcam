@@ -95,6 +95,31 @@ BEGIN
 	
 END$$
 
+
+
+
+DELIMITER ;
+;
+
+USE `dashcam`;
+DROP procedure IF EXISTS `sp_request_grab`;
+
+DELIMITER $$
+
+USE `dashcam`$$
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_request_grab`(time_in datetime(3), time_out DATETIME(3))
+BEGIN
+
+# check that we have something in those bounds
+# ...
+
+
+# insert into the table
+INSERT INTO grabs (id, time_in, time_out) VALUES(UUID_TO_BIN(UUID()), time_in, time_out);
+
+END$$
+
+
 DELIMITER ;
 ;
 
