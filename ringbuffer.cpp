@@ -46,6 +46,7 @@ public:
         gstreamPipeline("ringBufferPipeline"),
         m_sourceBins(NULL),
         m_browserDone(false),
+        m_sliceMins(sliceMins),
         m_fatal(false),
         m_nmea(this),
         m_mq(this),
@@ -272,6 +273,12 @@ public:
             sqlWorkJobs(sqlWorkJobs::taskType::swjStartJourney,m_journeyGuid));
 #endif
         // run
+        printf("Running for %u minutes, splitting every %u\n\r", minutes, m_sliceMins);
+
+#ifndef NO_SUBS
+        printf("subtitles ON\n\r");
+#endif
+
         gstreamPipeline::Run(minutes*60);
 
 #ifndef _DEBUG_NO_SQL
@@ -302,6 +309,8 @@ public:
 
 protected:
 
+    unsigned m_sliceMins;
+    
     bool m_browserDone, m_fatal;
     std::vector<std::string> arecords;
     
