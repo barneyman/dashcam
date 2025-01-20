@@ -165,8 +165,7 @@ jobs:
           file: buildx/Dockerfile.ringbuffer
           cache-from: type=gha
           cache-to: type=gha
-          platforms: linux/amd64
-          # platforms: linux/arm64,linux/amd64
+          platforms: linux/arm64,linux/amd64
           #,linux/arm/v7
           push: true
           tags: ghcr.io/barneyman/ringbuffer
