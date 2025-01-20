@@ -19,7 +19,7 @@ env:
 jobs:
   compile:
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     permissions:
       packages: write
 
@@ -71,6 +71,8 @@ jobs:
             apt install -y libavahi-client-dev libavahi-glib-dev
 
           run: |
+              gst-launch-1.0 --version
+
               make github ARCH=${{ matrix.dockerarch }} DEBARCH=${{ matrix.arch }}
 
       - name: amd build
@@ -94,6 +96,8 @@ jobs:
           sudo apt install -y libgps-dev
           sudo apt install -y libavahi-client-dev libavahi-glib-dev
 
+          gst-launch-1.0 --version
+
           make github ARCH=${{ matrix.dockerarch }}
    
         shell: bash
@@ -107,7 +111,7 @@ jobs:
             ./*${{ matrix.dockerarch }}.deb
 
   docker-dashcam:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     permissions:
       # or the push fails
       packages: write
