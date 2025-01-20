@@ -26,7 +26,7 @@ RUN if [ "${USE_APT_CACHE}" != "none" ]; then \
         echo 'Acquire::http { Proxy '\"${USE_APT_CACHE}\"'; };' > /etc/apt/apt.conf.d/01proxy; \
     fi
 
-RUN apt install -y libboost-all-dev fakeroot
+RUN apt install -y libboost-all-dev
 
 
 VOLUME /vids
