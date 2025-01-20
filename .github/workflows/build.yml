@@ -19,7 +19,7 @@ env:
 jobs:
   compile:
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       packages: write
 
@@ -51,8 +51,10 @@ jobs:
           # github.token doesn't grant access into packages
           # githubToken: ${{ secrets.PUSH_PACKAGE }}
           githubToken: ${{ github.token }}
+          # https://github.com/actions/runner-images/issues/9546
           install: |
             apt update && apt upgrade -y
+            apt remove libunwind-*
             apt install -y libboost-all-dev
             apt install -y gstreamer1.0-plugins-base \
               gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
@@ -75,11 +77,17 @@ jobs:
 
               make github ARCH=${{ matrix.dockerarch }} DEBARCH=${{ matrix.arch }}
 
+        # https://github.com/actions/runner-images/issues/9546
+        # remove unwind              
       - name: amd build
         if: matrix.arch == 'amd64' && env.fetchassets==''
         run: |
           sudo apt update && sudo apt upgrade -y
           sudo apt install -y libboost-all-dev
+
+          sudo apt remove libunwind-*
+          
+
           sudo apt install -y gstreamer1.0-plugins-base \
             gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
             gstreamer1.0-plugins-ugly gstreamer1.0-libav \
@@ -111,7 +119,7 @@ jobs:
             ./*${{ matrix.dockerarch }}.deb
 
   docker-dashcam:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       # or the push fails
       packages: write
