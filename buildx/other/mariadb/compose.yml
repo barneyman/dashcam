@@ -1,0 +1,9 @@
+services:
+  database:
+    image: debug/dashcam-mariadb:latest
+    volumes: 
+      - /var/lib/mysql
+    ports:
+      - 3306:3306
+
+      

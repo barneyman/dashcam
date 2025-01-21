@@ -89,10 +89,10 @@ docker_all: docker_sql docker_rtsp
 
 docker_sql: 
 #  exploit 'each line runs in its own sh` to not need pushd and popd
-	cd buildx/other/mysql && docker build --build-arg BUILDFROM=mysql:8.0.40-bookworm --build-arg ROOTPWD=password -f Dockerfile --tag debug/dashcam-sql:latest .
+	cd buildx/other/mariadb && docker build --build-arg BUILDFROM=mariadb:11.4 --build-arg ROOTPWD=password -f Dockerfile --tag debug/dashcam-mariadb:latest .
 
 docker_sql_run: docker_sql
-	docker compose -f buildx/other/mysql/compose.yml up
+	docker compose -f buildx/other/mariadb/compose.yml up -V
 
 docker_rtsp:
 	cd buildx/other/rtsp-simple-server && docker build -f Dockerfile --tag debug/dashcam-rtsp:latest .

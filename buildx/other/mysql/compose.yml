@@ -1,7 +1,0 @@
-services:
-  database:
-    image: debug/dashcam-sql
-    ports:
-      - 3306:3306
-
-      
