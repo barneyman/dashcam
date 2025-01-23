@@ -86,13 +86,13 @@ jobs:
       - name: Build and push sql
         uses: docker/build-push-action@v4
         with:
-          context: buildx/other/mysql
-          file: buildx/other/mysql/Dockerfile
+          context: buildx/other/mariadb
+          file: buildx/other/mariadb/Dockerfile
           cache-from: type=gha
           cache-to: type=gha
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/barneyman/mysql-amd64
+          tags: ghcr.io/barneyman/mariadb-amd64
           labels: |
             latest
             unstable
