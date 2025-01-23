@@ -142,6 +142,8 @@ BEGIN
     
   update journey_chapters set end_time=journey_offset_ms where id=chapter_guid;
 
+  CALL `dashcam`.`sp_test_grabs`();
+
 END$$
 
 DELIMITER ;

@@ -38,7 +38,7 @@ USE `dashcam`$$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_get_requested_grabs`()
 BEGIN
 
-	select BIN_TO_UUID(id) as id, time_in, time_out from grabs where result is null;
+	select (id) as id, time_in, time_out from grabs where result is null;
 
 END$$
 
@@ -84,7 +84,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 DROP PROCEDURE IF EXISTS `sp_test_grabs`;
 DELIMITER $$
-USE `dashcam`$$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_test_grabs`()
 BEGIN
 
@@ -93,37 +92,27 @@ DECLARE cursor_end_time DATETIME;
 DECLARE grabStartsAt DATETIME;
 DECLARE grabEndsAt DATETIME;
 DECLARE journeyLength INT;
+DECLARE journeyid UUID;
 
 DECLARE loopcounter INT;
 DECLARE rndStartOffsetSeconds INT;
 
-# for each journey ...
-DECLARE cursor_journey CURSOR FOR 
-SELECT start_time, end_time
-FROM journeys;
 
--- open the cursor
+DECLARE cursor_journey CURSOR FOR 
+	SELECT DISTINCT(journey) , journey_start,journey_end FROM dashcam.chapter_view ;
+
 OPEN cursor_journey;
 
-FETCH cursor_journey INTO cursor_start_time, cursor_end_time;
--- process the data
+FETCH cursor_journey INTO journeyid, cursor_start_time, cursor_end_time;
 
-select cursor_start_time as startsAt;
-
-
-# work out the length ofthe journey - in time
 SET journeyLength=TIMESTAMPDIFF(SECOND,cursor_start_time, cursor_end_time);
 
-# create N number of samples
+
 SET loopcounter = 0;
 
   theLoop: LOOP
 
     SET loopcounter = loopcounter +1;
-    
-    # each grab is going to be 2 minutes
-    # so we need a random number that is 0->(@journeyLength-3)
-    # TODO make it @journeyLength+LOTS to ensure bounds checking in sp_request_grab works
 
     set rndStartOffsetSeconds = RAND()*(journeyLength-3);
 
@@ -133,20 +122,18 @@ SET loopcounter = 0;
     call sp_request_grab(grabStartsAt, grabEndsAt,@returncode);
     select grabStartsAt, grabEndsAt, @returncode;
 
-    IF loopcounter =5 THEN
+    IF loopcounter =2 THEN
         LEAVE theLoop;
     END IF;
  END LOOP theLoop;
 
 
--- close the cursor
+
 CLOSE cursor_journey;
 
 
 END$$
-
 DELIMITER ;
-
 -- -----------------------------------------------------
 -- procedure sp_update_requested_grabs
 -- -----------------------------------------------------
@@ -155,7 +142,7 @@ DELIMITER $$
 USE `dashcam`$$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_update_requested_grabs`(in grab_guid varchar(42),in grab_result smallint,in filepath varchar(255))
 BEGIN
-	update grabs set result=grab_result, grab_filename=filepath where id=UUID_TO_BIN(grab_guid);
+	update grabs set result=grab_result, grab_filename=filepath where id=(grab_guid);
 END$$
 
 DELIMITER ;
