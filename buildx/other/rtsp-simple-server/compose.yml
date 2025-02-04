@@ -1,6 +1,6 @@
 services:
   rtsp:
-    image: debug/dashcam-rtsp
+    image: debug/dashcam-rtsp:latest
     network_mode: host
     privileged: true
     environment:

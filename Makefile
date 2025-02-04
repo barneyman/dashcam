@@ -29,6 +29,8 @@ github:
 github: CPPFLAGS=$(PRODFLAGS)
 github: $(GSTHELPERLIB) $(MYPLUGINSLIB) ringbuffer joiner package_apps
 
+prod: github
+
 leaks:
 leaks: CPPFLAGS=$(LEAKFLAGS)
 leaks: $(GSTHELPERLIB) $(MYPLUGINSLIB) ringbuffer joiner 

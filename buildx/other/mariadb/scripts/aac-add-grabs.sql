@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS `dashcam`.`grabs` (
   `time_out` DATETIME(3) NOT NULL,
   `result` INT NULL DEFAULT NULL,
   `grab_filename` VARCHAR(255) NULL DEFAULT NULL,
+  `last_update` datetime(3),
   PRIMARY KEY (`id`),
   INDEX `TIMEIN` (`time_in` ASC) VISIBLE);
 
@@ -142,7 +143,8 @@ DELIMITER $$
 USE `dashcam`$$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_update_requested_grabs`(in grab_guid varchar(42),in grab_result smallint,in filepath varchar(255))
 BEGIN
-	update grabs set result=grab_result, grab_filename=filepath where id=(grab_guid);
+	update grabs set result=grab_result, grab_filename=filepath, last_update=NOW() where id=(grab_guid);
+
 END$$
 
 DELIMITER ;
