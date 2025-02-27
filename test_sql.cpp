@@ -126,32 +126,32 @@ int main()
     GstClockTime gtime=(rawtime-3600)*GST_SECOND;
 
 
-    scheduler.m_taskQueue.safe_push(sqlWorkJobs(gtime));
+    scheduler.m_taskQueue.safe_push(sqlExpireJourneysJob(gtime));
 
     sleep(20);
 
-    scheduler.m_taskQueue.safe_push(sqlWorkJobs(sqlWorkJobs::taskType::swjStartJourney,testGuid));
+    scheduler.m_taskQueue.safe_push(sqlStartEndJourneyJob(sqlWorkJobs::taskType::swjStartJourney,testGuid));
 
     sleep(2);
 
 
-    scheduler.m_taskQueue.safe_push(sqlWorkJobs(testGuid,gtime));
+    scheduler.m_taskQueue.safe_push(sqlUpdateJourneyJob(testGuid,gtime));
 
 
     sleep(1);
     boost::uuids::uuid chapterGuid=boost::uuids::random_generator()();
-    scheduler.m_taskQueue.safe_push(sqlWorkJobs("wibble",
+    scheduler.m_taskQueue.safe_push(sqlStartJourneyChapterJob("wibble",
                                                     testGuid,
                                                     chapterGuid,
                                                     500));
 
     sleep(1);
-    scheduler.m_taskQueue.safe_push(sqlWorkJobs(testGuid,
+    scheduler.m_taskQueue.safe_push(sqlEndJourneyChapterJob(testGuid,
                                                     chapterGuid,
                                                     5000));
 
     sleep(1);
-    scheduler.m_taskQueue.safe_push(sqlWorkJobs(sqlWorkJobs::taskType::swjEndJourney,testGuid));
+    scheduler.m_taskQueue.safe_push(sqlStartEndJourneyJob(sqlWorkJobs::taskType::swjEndJourney,testGuid));
 
     sleep(1);
 

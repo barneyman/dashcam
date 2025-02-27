@@ -162,7 +162,7 @@ public:
         m_chapter_open=true;
 
 #ifndef _DEBUG_NO_SQL
-        m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(newFile,
+        m_scheduler.m_taskQueue.safe_push(sqlStartJourneyChapterJob(newFile,
                                                         m_journeyGuid,
                                                         m_currentChapterGuid,
                                                         (splitStart/GST_MSECOND)));
@@ -182,7 +182,7 @@ public:
     {
 
 #ifndef _DEBUG_NO_SQL
-        m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(m_journeyGuid,
+        m_scheduler.m_taskQueue.safe_push(sqlEndJourneyChapterJob(m_journeyGuid,
                                                         m_currentChapterGuid,
                                                         (splitEnd/GST_MSECOND)));
 #endif
@@ -194,7 +194,7 @@ public:
         GstClockTime gtime=(rawtime-(86400*1))*GST_SECOND;
 
 #ifndef _DEBUG_NO_SQL
-        m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(gtime));
+        m_scheduler.m_taskQueue.safe_push(sqlExpireJourneysJob(gtime));
 #endif 
 
         //m_chapter_open.unlock();
@@ -270,7 +270,7 @@ public:
         m_journeyGuid=boost::uuids::random_generator()();
 #ifndef _DEBUG_NO_SQL
         m_scheduler.m_taskQueue.safe_push(
-            sqlWorkJobs(sqlWorkJobs::taskType::swjStartJourney,m_journeyGuid));
+            sqlStartEndJourneyJob(sqlWorkJobs::taskType::swjStartJourney,m_journeyGuid));
 #endif
         // run
         printf("Running for %u minutes, splitting every %u\n\r", minutes, m_sliceMins);
@@ -284,7 +284,7 @@ public:
 #ifndef _DEBUG_NO_SQL
         // close a journey
         m_scheduler.m_taskQueue.safe_push(
-            sqlWorkJobs(sqlWorkJobs::taskType::swjEndJourney,m_journeyGuid));
+            sqlStartEndJourneyJob(sqlWorkJobs::taskType::swjEndJourney,m_journeyGuid));
 #endif
 
         m_scheduler.stop();
@@ -301,7 +301,7 @@ public:
         {
             m_basetime=gstreamPipeline::GetTimeSinceEpoch();
 #ifndef _DEBUG_NO_SQL
-            m_scheduler.m_taskQueue.safe_push(sqlWorkJobs(m_journeyGuid,m_basetime));
+            m_scheduler.m_taskQueue.safe_push(sqlUpdateJourneyJob(m_journeyGuid,m_basetime));
 #endif            
         }
     }

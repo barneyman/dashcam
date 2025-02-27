@@ -159,7 +159,14 @@ protected:
     mariaDBconnection *m_sql;
 
 
-public:
+    sqlWorkJobs(GstClockTime basetime):
+    m_tasktype(swjExpireJourneys),
+    m_sql(NULL),
+    m_basetime(basetime)
+    {
+
+    }       
+
     // swjStartJourney
     // swjEndJourney
     sqlWorkJobs(taskType task, boost::uuids::uuid guid):
@@ -206,13 +213,11 @@ public:
 
     }
 
-    sqlWorkJobs(GstClockTime basetime):
-    m_tasktype(swjExpireJourneys),
-    m_sql(NULL),
-    m_basetime(basetime)
-    {
+public:
 
-    }       
+
+
+
 
 
 
@@ -370,6 +375,7 @@ protected:
 
                 for(auto iter=killthemall.begin();iter!=killthemall.end();iter++)
                 {
+                    printf("** deleting %s\r\n",iter->first.c_str());
                     // remove the file
                     unlink(iter->first.c_str());
                     // update the db
@@ -403,4 +409,57 @@ protected:
 
     }
 
+};
+
+
+class sqlExpireJourneysJob : public sqlWorkJobs
+{
+public:
+    sqlExpireJourneysJob(GstClockTime basetime):
+        sqlWorkJobs(basetime)
+        {}
+
+};
+
+class sqlStartEndJourneyJob : public sqlWorkJobs
+{
+public:
+    sqlStartEndJourneyJob(taskType task, boost::uuids::uuid guid):sqlWorkJobs(task, guid)
+    {
+
+    }
+};
+
+class sqlUpdateJourneyJob : public sqlWorkJobs
+{
+public:
+    sqlUpdateJourneyJob(boost::uuids::uuid guid, GstClockTime basetime):sqlWorkJobs(guid, basetime)
+    {}
+
+};
+
+class sqlStartJourneyChapterJob : public sqlWorkJobs
+{
+public:
+    sqlStartJourneyChapterJob(std::string filepath, 
+                    boost::uuids::uuid journey_guid, 
+                    boost::uuids::uuid chapter_guid, 
+                    long long start_ms):
+                    sqlWorkJobs(filepath, 
+                        journey_guid, 
+                        chapter_guid, 
+                        start_ms)
+    {}
+};
+
+class sqlEndJourneyChapterJob:public sqlWorkJobs
+{
+public:
+    sqlEndJourneyChapterJob(boost::uuids::uuid journey_guid, 
+                    boost::uuids::uuid chapter_guid, 
+                    long long end_ms):
+        sqlWorkJobs(journey_guid, 
+                    chapter_guid, 
+                    end_ms)
+        {}
 };
