@@ -1,7 +1,7 @@
 name: Compile and Package into Debian
 on:
   push:
-    branches: [ main ]
+    branches: [ main, add-redis ]
 
     paths-ignore:
       - 'buildx/other/**'
@@ -140,7 +140,7 @@ jobs:
         uses: actions/download-artifact@v4.1.8
         with:
           path: ./
-          run_id: ${{ env.fetchassets }} 
+          run-id: ${{ env.fetchassets }} 
   
      
       - name: tree
@@ -170,7 +170,7 @@ jobs:
           push: true
           tags: ghcr.io/barneyman/ringbuffer
           labels: |
-            latest
+            wip
             unstable
           build-args: |
             STARTAPP=ringbuffer

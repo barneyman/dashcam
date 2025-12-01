@@ -18,7 +18,7 @@ RUN if [ "${REINSTALL_CMAKE_VERSION_FROM_SOURCE}" != "none" ]; then \
 #     && apt-get -y install --no-install-recommends <your-package-list-here>
 
 # update
-RUN apt update && apt upgrade -y
+RUN apt-get update && apt-get upgrade -y
 
 ARG USE_APT_CACHE="none"
 # use the cache
@@ -26,7 +26,7 @@ RUN if [ "${USE_APT_CACHE}" != "none" ]; then \
         echo 'Acquire::http { Proxy '\"${USE_APT_CACHE}\"'; };' > /etc/apt/apt.conf.d/01proxy; \
     fi
 
-RUN apt install -y libboost-all-dev
+RUN apt-get install -y libboost-all-dev fakeroot
 
 
 VOLUME /vids
@@ -36,9 +36,9 @@ VOLUME /vids
 FROM devbase as gstreamer_debug
 
 # to get pango (text-overlay) built
-RUN apt install -y libpango1.0-dev
+RUN apt-get install -y libpango1.0-dev
 # ?
-RUN apt install -y libavfilter-dev
+RUN apt-get install -y libavfilter-dev
 
 WORKDIR /gstreamer
 
@@ -109,19 +109,19 @@ ENV LD_LIBRARY_PATH=/usr/local/lib/x86_64-linux-gnu:/usr/local/lib:${LD_LIBRARY_
 ENV GI_TYPELIB_PATH=/usr/lib/x86_64-linux-gnu/girepository-1.0:/usr/local/lib/x86_64-linux-gnu/girepository-1.0
 
 # intel vaapi hw encoding 
-RUN apt install -y gstreamer1.0-vaapi
+RUN apt-get install -y gstreamer1.0-vaapi
 
 # gpsd dev
-RUN apt install -y libgps-dev
+RUN apt-get install -y libgps-dev
 
 # avahi client
-RUN apt install -y libavahi-client-dev libavahi-glib-dev 
+RUN apt-get install -y libavahi-client-dev libavahi-glib-dev 
 
 # openssl
-RUN apt install libssl-dev
+RUN apt-get install libssl-dev
 
 # sql dev
-#RUN apt install -y libmariadb-dev
+#RUN apt-get install -y libmariadb-dev
 WORKDIR /mariadb
 RUN git clone https://github.com/mariadb-corporation/mariadb-connector-c && \
         cd mariadb-connector-c && \
@@ -147,27 +147,27 @@ FROM devbase as gstreamer_dev
 
 
 # gstreamer
-RUN apt install -y gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
+RUN apt-get install -y gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
     gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl  
 
 # dev
-RUN apt install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev 
+RUN apt-get install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev 
 
-RUN apt install -y libpango1.0-dev
+RUN apt-get install -y libpango1.0-dev
 # ?
-RUN apt install -y libavfilter-dev
+RUN apt-get install -y libavfilter-dev
 
 # intel vaapi hw encoding 
-RUN apt install -y gstreamer1.0-vaapi
+RUN apt-get install -y gstreamer1.0-vaapi
 
 # sql dev
-RUN apt install -y libmariadb-dev
+RUN apt-get install -y libmariadb-dev
 
 # gpsd dev
-RUN apt install -y libgps-dev
+RUN apt-get install -y libgps-dev
 
 # avahi client
-RUN apt install -y dbus libavahi-client-dev libavahi-glib-dev 
+RUN apt-get install -y dbus libavahi-client-dev libavahi-glib-dev 
 
 #####################
 

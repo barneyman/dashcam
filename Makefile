@@ -23,15 +23,26 @@ GPSD_CONFIG = `pkg-config --cflags --libs libgps`
 
 AVAHI_CONFIG = `pkg-config --cflags --libs avahi-glib avahi-client`
 
-all: $(GSTHELPERLIB) $(MYPLUGINSLIB) caps joiner test_sql
+all: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(HIREDISSHAREDLIB) caps ringbuffer joiner test_sql
 
 github: 
 github: CPPFLAGS=$(PRODFLAGS)
-github: $(GSTHELPERLIB) $(MYPLUGINSLIB) ringbuffer joiner package_apps
+github: $(GSTHELPERLIB) $(MYPLUGINSLIB) $(HIREDISSHAREDLIB) ringbuffer joiner package_apps
 
 leaks:
 leaks: CPPFLAGS=$(LEAKFLAGS)
 leaks: $(GSTHELPERLIB) $(MYPLUGINSLIB) ringbuffer joiner 
+
+
+# hiredis lib
+HIREDIS = hiredis
+HIREDISSHAREDLIB =$(HIREDIS)/build/libhiredis.so
+$(HIREDISSHAREDLIB):$(wildcard $(HIREDIS)/*.c) $(wildcard $(HIREDIS)/*.h)
+	mkdir -p $(HIREDIS)/build
+	cd $(HIREDIS)/build && cmake .. && make
+
+hiredis: $(HIREDISSHAREDLIB)
+
 
 # internal libs
 GSTHELPERESINCLUDE = gstreamHelpers
@@ -46,40 +57,42 @@ $(MYPLUGINSLIB):
 	make CPPFLAGS="$(CPPFLAGS)" -C $(GSTHELPERESINCLUDE) myplugins 
 
 ringbuffer: ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h)
-	g++ $(CPPFLAGS) -o $@-$(ARCH) ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(AVAHI_CONFIG) $(GST_CONFIG) $(MYSQLCONFIG) $(GPSD_CONFIG) 
+	g++ $(CPPFLAGS) -o $@ ringbuffer.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(AVAHI_CONFIG) $(GST_CONFIG) $(MYSQLCONFIG) $(GPSD_CONFIG) 
 
 joiner: joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(wildcard $(HELPERBINS)/*.h) $(wildcard $(GSTHELPERESINCLUDE)/*.h) $(wildcard ./*.h)
-	g++ $(CPPFLAGS) -o $@-$(ARCH) joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(GST_CONFIG) $(MYSQLCONFIG) 
+	g++ $(CPPFLAGS) -o $@ joiner.cpp $(GSTHELPERLIB) $(MYPLUGINSLIB) $(GST_CONFIG) $(MYSQLCONFIG) 
 
 test_sql: test_sql.cpp $(wildcard ./*.h)
-	g++ $(CPPFLAGS) -o $@-$(ARCH) test_sql.cpp $(MYSQLCONFIG) $(GST_CONFIG)
+	g++ $(CPPFLAGS) -o $@ test_sql.cpp $(MYSQLCONFIG) $(GST_CONFIG)
 
 test_nobins: test_nobins.cpp $(wildcard ./*.h) $(GSTHELPERLIB) $(wildcard $(HELPERBINS)/*.h)
-	g++ $(CPPFLAGS) -o $@-$(ARCH) test_nobins.cpp $(GST_CONFIG) $(GSTHELPERLIB) $(MYPLUGINSLIB)
+	g++ $(CPPFLAGS) -o $@ test_nobins.cpp $(GST_CONFIG) $(GSTHELPERLIB) $(MYPLUGINSLIB)
 
 test_gpsd: test_gpsd.cpp 
-	g++ $(CPPFLAGS) -o $@-$(ARCH) test_gpsd.cpp $(GPSD_CONFIG)
+	g++ $(CPPFLAGS) -o $@ test_gpsd.cpp $(GPSD_CONFIG)
 
 test_composite: test_composite.cpp
-	g++ $(CPPFLAGS) -o $@-$(ARCH) test_composite.cpp $(GST_CONFIG) $(GSTHELPERLIB) $(MYPLUGINSLIB)
+	g++ $(CPPFLAGS) -o $@ test_composite.cpp $(GST_CONFIG) $(GSTHELPERLIB) $(MYPLUGINSLIB)
 
 caps: ringbuffer
-	sudo setcap cap_net_admin=eip ./ringbuffer-$(ARCH)
+	sudo setcap cap_net_admin=eip ./ringbuffer
 
 # preceeding - means 'let it fail'
 clean:
 	-rm ./dots/*
 #	-rm ./vids/out.mp4
 
-package_all: package_apps
+package_all: all package_apps
 
-package_apps:
-	- mkdir .debpkg-server/usr/
-	- mkdir .debpkg-server/usr/bin
+package_apps: ringbuffer joiner $(HIREDISSHAREDLIB)
+	- mkdir -p .debpkg-server/usr/
+	- mkdir -p .debpkg-server/usr/bin
+	- mkdir -p .debpkg-server/usr/lib
 	sed -i 's/Architecture:.*/Architecture: $(ARCH)/' .debpkg-server/DEBIAN/control
 	sed -i 's/Package:.*/Package: dashcam-server-$(ARCH)/' .debpkg-server/DEBIAN/control
-	cp ringbuffer-$(ARCH) .debpkg-server/usr/bin/
-	cp joiner-$(ARCH) .debpkg-server/usr/bin/
+	cp ringbuffer .debpkg-server/usr/bin/
+	cp joiner .debpkg-server/usr/bin/
+	cp $(HIREDISSHAREDLIB)* .debpkg-server/usr/lib/
 	fakeroot dpkg-deb --build .debpkg-server
 	mv .debpkg-server.deb ./ringbuffer-$(ARCH).deb
 

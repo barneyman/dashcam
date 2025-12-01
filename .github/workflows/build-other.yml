@@ -173,11 +173,6 @@ jobs:
           # any custom stage will include an image export directive.
           stage-list: stage0 stage1 stage2 ./stage-docker-install ./stage-docker-chrony
 
-          # Use qcow2 images to reduce space and runtime requirements. _WARNING_: this is 
-          # broken on recent versions of `pi-gen` and destined to be removed entirely (see 
-          # https://github.com/RPi-Distro/pi-gen/pull/648).
-          use-qcow2: 0
-
           # Name of the initial user account.
           username: pi
 
