@@ -1,7 +1,7 @@
 name: Build Docker images, each OS image, seed OS images
 on:
   push:
-    branches: [ main ]
+    branches: [ main, add-carpihat-config ]
 
     paths:
       - 'buildx/other/**'
@@ -171,18 +171,15 @@ jobs:
           # images in stage2 (lite), stage4 and stage5. You probably want to hook in custom 
           # stages before one of the exported stages. Otherwise, the action will make sure 
           # any custom stage will include an image export directive.
-          stage-list: stage0 stage1 stage2 ./stage-docker-install ./stage-docker-chrony
-
-          # Use qcow2 images to reduce space and runtime requirements. _WARNING_: this is 
-          # broken on recent versions of `pi-gen` and destined to be removed entirely (see 
-          # https://github.com/RPi-Distro/pi-gen/pull/648).
-          use-qcow2: 0
+          stage-list: stage0 stage1 stage2 ./stage-docker-install ./stage-docker-chrony ./stage-docker-carpihat-config
 
           # Name of the initial user account.
           username: pi
 
           # Wifi country code of default network to connect to.
           wpa-country: 'AU'
+
+          timezone: UTC
 
           disable-first-boot-user-rename: 1
     
