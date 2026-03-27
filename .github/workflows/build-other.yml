@@ -179,7 +179,7 @@ jobs:
           # Wifi country code of default network to connect to.
           wpa-country: 'AU'
 
-          timezone: etc/UTC
+          timezone: Etc/UTC
 
           disable-first-boot-user-rename: 1
     
