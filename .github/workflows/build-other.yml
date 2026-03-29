@@ -164,7 +164,8 @@ jobs:
 
           # Release version of pi-gen to use. This can both be a branch or tag name known in 
           # the pi-gen repository.
-          pi-gen-version: arm64
+          # pi-gen-version: arm64
+          pi-gen-version: 7688396ed49ba125be54374f74c5e79417e7b9d0
 
           # List of stage name to execute in given order. Relative and absolute paths to 
           # custom stage directories are allowed here. Note that by default pi-gen exports 
