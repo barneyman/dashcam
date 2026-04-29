@@ -19,7 +19,9 @@ jobs:
   docker-other:
     permissions:
       packages: write
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    #  ubuntu-22.04 needed to fix trixie building problem with pi-gen
+    runs-on:  ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
         with:
