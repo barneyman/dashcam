@@ -43,7 +43,7 @@ jobs:
           file: buildx/other/gpsd-chrony/Dockerfile
           cache-from: type=gha
           cache-to: type=gha
-          platforms: linux/arm/v6,linux/amd64
+          platforms: linux/arm/v7
           push: true
           tags: ghcr.io/barneyman/gpsd-chrony-ntp
           labels: |
@@ -91,7 +91,7 @@ jobs:
           file: buildx/other/mariadb/Dockerfile
           cache-from: type=gha
           cache-to: type=gha
-          platforms: linux/amd64
+          platforms: linux/amd64, linux/arm/v7
           push: true
           tags: ghcr.io/barneyman/mariadb-amd64
           labels: |
@@ -139,21 +139,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}        
 
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'      
+
+
       - name: pull_images
         run: |
           docker pull --platform=linux/arm ghcr.io/barneyman/gpsd-chrony-ntp
-
-          docker image inspect ghcr.io/barneyman/gpsd-chrony-ntp --format '{{.Architecture}}'
-
-          docker save --platform linux/arm ghcr.io/barneyman/gpsd-chrony-ntp | gzip --best > stage-docker-chrony/00-seed-chrony/files/1.tar.gz
-
-
+          docker save ghcr.io/barneyman/gpsd-chrony-ntp | gzip --best > stage-docker-chrony/00-seed-chrony/files/1.tar.gz
 
           docker pull --platform=linux/arm ghcr.io/barneyman/rtsp
-
-          docker image inspect ghcr.io/barneyman/rtsp --format '{{.Architecture}}'
-
-          docker save --platform linux/arm ghcr.io/barneyman/rtsp | gzip --best > stage-docker-rtsp/00-seed-rtsp/files/1.tar.gz
+          docker save ghcr.io/barneyman/rtsp | gzip --best > stage-docker-rtsp/00-seed-rtsp/files/1.tar.gz
 
           tree stage-docker-chrony
           tree stage-docker-rtsp
