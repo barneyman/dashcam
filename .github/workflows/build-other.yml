@@ -1,7 +1,7 @@
 name: Build Docker images, each OS image, seed OS images
 on:
   push:
-    branches: [ main, add-carpihat-config ]
+    branches: [ main, fix-pi-build ]
 
     paths:
       - 'buildx/other/**'
@@ -16,7 +16,7 @@ env:
 
 jobs:
 
-  docker-other:
+  docker-builds:
     permissions:
       packages: write
     runs-on: ubuntu-22.04
@@ -119,6 +119,11 @@ jobs:
       # need dregsy 
       # need hostapd/dnsmasq
 
+
+  build-pi:
+    runs-on: ubuntu-24.04-arm
+    steps:          
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -171,7 +176,7 @@ jobs:
           # images in stage2 (lite), stage4 and stage5. You probably want to hook in custom 
           # stages before one of the exported stages. Otherwise, the action will make sure 
           # any custom stage will include an image export directive.
-          stage-list: stage0 stage1 stage2 ./stage-docker-install ./stage-docker-chrony ./stage-docker-carpihat-config
+          stage-list: stage0 stage1 stage2 ./stage-docker-install ./stage-docker-chrony 
 
           # Name of the initial user account.
           username: pi
