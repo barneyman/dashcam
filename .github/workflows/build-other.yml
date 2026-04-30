@@ -147,24 +147,24 @@ jobs:
       - name: pull_images
         run: |
 
-          cp /etc/docker/daemon.json /etc/docker/daemon.json.oem
+          sudo cp /etc/docker/daemon.json /etc/docker/daemon.json.oem
 
           mkdir stage-docker-chrony/00-seed-chrony/files/docker-data-root
-          echo "{ \"data-root\": \"/stage-docker-chrony/00-seed-chrony/files" }" > /etc/docker/daemon.json
-          systemctl restart docker
+          sudo echo "{ \"data-root\": \"/stage-docker-chrony/00-seed-chrony/files\" }" > /etc/docker/daemon.json
+          sudo systemctl restart docker
 
           docker pull --platform=linux/arm ghcr.io/barneyman/gpsd-chrony-ntp
           #docker save ghcr.io/barneyman/gpsd-chrony-ntp | gzip --best > stage-docker-chrony/00-seed-chrony/files/1.tar.gz
 
-          mkdir stage-docker-rtsp/00-seed-rtsp/files/docker-data-root
-          echo "{ \"data-root\": \"/stage-docker-rtsp/00-seed-rtsp/files" }" > /etc/docker/daemon.json
-          systemctl restart docker
+          sudo mkdir stage-docker-rtsp/00-seed-rtsp/files/docker-data-root
+          sudo echo "{ \"data-root\": \"/stage-docker-rtsp/00-seed-rtsp/files\" }" > /etc/docker/daemon.json
+          sudo systemctl restart docker
 
           docker pull --platform=linux/arm ghcr.io/barneyman/rtsp
           #docker save ghcr.io/barneyman/rtsp | gzip --best > stage-docker-rtsp/00-seed-rtsp/files/1.tar.gz
 
-          mv /etc/docker/daemon.json.oem /etc/docker/daemon.json
-          systemctl restart docker
+          sudo mv /etc/docker/daemon.json.oem /etc/docker/daemon.json
+          sudo systemctl restart docker
 
           tree stage-docker-rtsp
           tree stage-docker-chrony
