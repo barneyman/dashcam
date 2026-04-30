@@ -141,11 +141,19 @@ jobs:
 
       - name: pull_images
         run: |
-          docker pull --platform=linux/arm64 ghcr.io/barneyman/gpsd-chrony-ntp
-          docker save --platform linux/arm64 ghcr.io/barneyman/gpsd-chrony-ntp | gzip --best > stage-docker-chrony/00-seed-chrony/files/1.tar.gz
+          docker pull --platform=linux/arm ghcr.io/barneyman/gpsd-chrony-ntp
 
-          docker pull --platform=linux/arm64 ghcr.io/barneyman/rtsp
-          docker save --platform linux/arm64 ghcr.io/barneyman/rtsp | gzip --best > stage-docker-rtsp/00-seed-rtsp/files/1.tar.gz
+          docker image inspect ghcr.io/barneyman/gpsd-chrony-ntp --format '{{.Architecture}}'
+
+          docker save --platform linux/arm ghcr.io/barneyman/gpsd-chrony-ntp | gzip --best > stage-docker-chrony/00-seed-chrony/files/1.tar.gz
+
+
+
+          docker pull --platform=linux/arm ghcr.io/barneyman/rtsp
+
+          docker image inspect ghcr.io/barneyman/rtsp --format '{{.Architecture}}'
+
+          docker save --platform linux/arm ghcr.io/barneyman/rtsp | gzip --best > stage-docker-rtsp/00-seed-rtsp/files/1.tar.gz
 
           tree stage-docker-chrony
           tree stage-docker-rtsp
