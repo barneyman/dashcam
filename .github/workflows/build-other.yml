@@ -152,11 +152,7 @@ jobs:
           docker pull --platform=linux/arm ghcr.io/barneyman/rtsp
           docker save ghcr.io/barneyman/rtsp | gzip --best > stage-docker-rtsp/00-seed-rtsp/files/1.tar.gz
 
-          tree stage-docker-chrony
-          tree stage-docker-rtsp
-
       - uses: usimd/pi-gen-action@v1
-        if: false
         id: pibuild
         with:
           compression: xz
