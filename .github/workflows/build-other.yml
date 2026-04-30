@@ -147,6 +147,8 @@ jobs:
       - name: pull_images
         run: |
 
+          if [ ! -f "/etc/docker/daemon.json" ]; then sudo echo "{}" > /etc/docker/daemon.json; fi
+
           sudo cp /etc/docker/daemon.json /etc/docker/daemon.json.oem
 
           mkdir stage-docker-chrony/00-seed-chrony/files/docker-data-root
