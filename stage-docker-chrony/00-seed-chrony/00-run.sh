@@ -3,7 +3,7 @@
 cp files/chrony.tar.gz ${ROOTFS_DIR}/tmp/
 cp files/docker-compose.yml ${ROOTFS_DIR}/var/firstboot/
 
-tree ${ROOTFS_DIR}/tmp/
+ls ${ROOTFS_DIR}/tmp/
 
 on_chroot << EOF
 
