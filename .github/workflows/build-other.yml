@@ -202,6 +202,9 @@ jobs:
           timezone: Etc/UTC
 
           disable-first-boot-user-rename: 1
+
+          # get to host's docker
+          docker-opts: -v /var/run/docker.sock:/var/run/docker.sock
     
       - uses: actions/upload-artifact@v4
         with:
