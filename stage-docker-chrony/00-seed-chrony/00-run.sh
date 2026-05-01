@@ -1,15 +1,15 @@
 #!/bin/bash -e
 
-cp files/chrony.tar.gz ${ROOTFS_DIR}/tmp/
+cp files/chrony.tar.gz ${ROOTFS_DIR}/var/
 cp files/docker-compose.yml ${ROOTFS_DIR}/var/firstboot/
 
-ls ${ROOTFS_DIR}/tmp/ -al
+ls ${ROOTFS_DIR}/var/ -al
 
 on_chroot << EOF
 
-    ls /tmp/ -al
+    ls /var/ -al
 
-    docker load -i /tmp/chrony.tar.gz
-    rm /tmp/chrony.tar.gz
+    docker load -i /var/chrony.tar.gz
+    rm /var/chrony.tar.gz
 
 EOF
