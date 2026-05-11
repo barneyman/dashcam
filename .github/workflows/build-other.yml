@@ -204,7 +204,8 @@ jobs:
           disable-first-boot-user-rename: 1
 
           # get to host's docker
-          docker-opts: -v /var/run/docker.sock:/var/run/docker.sock
+          #docker-opts: -v /var/run/docker.sock:/var/run/docker.sock
+          docker-opts: -v /var/run/docker.sock:/pi-gen/work/dashcam-${{ github.run_number }}/stage-docker-chrony/rootfs/var/run/docker.sock
     
       - uses: actions/upload-artifact@v4
         with:
